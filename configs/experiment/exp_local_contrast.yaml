@@ -1,0 +1,25 @@
+# Experiment: CLIP + Local Contrastive (no text refinement)
+includes: ["default.yaml", "model/clip_vit_b16.yaml", "model/local_contrastive.yaml", "model/alignment.yaml", "data/bone_xray.yaml", "train/fewshot_1shot.yaml"]
+experiment_name: "local_contrast"
+model:
+  text_refiner:
+    trainable: false
+  local_contrastive:
+    trainable: true
+    top_k: 4
+    bottom_k: 4
+    temperature: 0.1
+  alignment:
+    alpha_global: 0.5
+    alpha_local: 0.5
+loss:
+  classification:
+    weight: 1.0
+  global_alignment:
+    weight: 1.0
+  local_alignment:
+    weight: 1.0
+  local_contrastive:
+    weight: 0.5
+  text_refinement:
+    weight: 0.0

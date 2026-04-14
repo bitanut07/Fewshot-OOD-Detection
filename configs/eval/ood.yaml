@@ -1,0 +1,27 @@
+# Evaluation: Few-shot OOD Detection
+eval:
+  mode: "ood"
+  test_on_ood: true
+  mix_ood_with_known: true
+  metrics_ood:
+    - "auroc"
+    - "aupr_in"
+    - "aupr_out"
+    - "fpr95"
+  ood:
+    method: "msp"
+    threshold_strategy: "fixed"
+    fixed_threshold: 0.0
+    percentile: 95
+  episodes:
+    num_episodes: 100
+    n_way: 5
+    k_shot: 1
+    n_query: 15
+    ood_ratio: 0.2
+  save_ood_histograms: true
+  histogram_file: "outputs/figures/ood_histograms.png"
+  save_predictions: true
+  predictions_file: "outputs/predictions/ood_predictions.csv"
+  include_ood_score: true
+  checkpoint_path: null

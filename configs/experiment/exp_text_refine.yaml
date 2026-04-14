@@ -1,0 +1,23 @@
+# Experiment: CLIP + Text Refinement (no local contrastive)
+includes: ["default.yaml", "model/clip_vit_b16.yaml", "model/text_refiner.yaml", "data/bone_xray.yaml", "train/fewshot_1shot.yaml"]
+experiment_name: "text_refine"
+model:
+  text_refiner:
+    trainable: true
+    alpha: 0.5
+  local_contrastive:
+    trainable: false
+  alignment:
+    alpha_global: 0.7
+    alpha_local: 0.3
+loss:
+  classification:
+    weight: 1.0
+  global_alignment:
+    weight: 1.0
+  local_alignment:
+    weight: 0.5
+  local_contrastive:
+    weight: 0.0
+  text_refinement:
+    weight: 0.1

@@ -1,0 +1,35 @@
+# =============================================================================
+# Local Contrastive Learning Module Configuration
+# Supervised contrastive learning on disease-relevant vs disease-irrelevant regions
+# =============================================================================
+
+model_type: "local_contrastive"
+
+local_contrastive:
+  # Temperature for supervised contrastive loss
+  temperature: 0.1
+
+  # Region selection (must match region_selector config)
+  top_k: 4                       # Disease-relevant regions
+  bottom_k: 4                    # Disease-irrelevant regions
+
+  # Loss configuration
+  use_cosine_similarity: true
+  normalize_embeddings: true
+
+  # Positive/negative pairs construction
+  # Positive: disease-relevant patches from same class
+  # Negative: disease-irrelevant patches OR cross-class disease-relevant patches
+  contrastive_mode: "supervised"  # Options: supervised, self_supervised
+  num_negatives: 63               # Total negatives per anchor (N * K - K + other classes)
+
+  # Trainability
+  trainable: true
+
+  # Momentum update for prototype (optional)
+  use_momentum_prototype: false
+  momentum: 0.999
+
+  # Clipping range for similarity scores
+  sim_min: -1.0
+  sim_max: 1.0

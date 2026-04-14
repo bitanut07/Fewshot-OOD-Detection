@@ -1,0 +1,15 @@
+# Evaluation: Few-shot Classification
+eval:
+  mode: "fsl"
+  metrics_cls:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1_score"
+    - "auroc"
+  save_predictions: true
+  save_confusion_matrix: true
+  predictions_file: "outputs/predictions/cls_predictions.csv"
+  confusion_matrix_file: "outputs/figures/confusion_matrix.png"
+  num_episodes: 100
+  checkpoint_path: null

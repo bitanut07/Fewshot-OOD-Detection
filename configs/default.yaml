@@ -1,0 +1,195 @@
+# =============================================================================
+# Default Configuration — Global Settings for GLOCAL FSL-OOD Framework
+# Reference: "Global and Local Vision-Language Alignment for Few-Shot Learning
+#             and Few-Shot OOD Detection"
+# =============================================================================
+
+# ── Experiment ──────────────────────────────────────────────────────────────
+experiment:
+  name: "glocal_fsl_ood"
+  project: "glocal-med"
+  version: "v1.0"
+  seed: 42
+  deterministic: true
+  use_cuda: true
+  gpu_id: 0
+
+# ── Paths ─────────────────────────────────────────────────────────────────────
+paths:
+  data_root: "data/processed"
+  raw_data_root: "data/raw"
+  splits_root: "data/splits"
+  prompts_root: "data/prompts"
+  output_root: "outputs"
+  log_dir: "outputs/logs"
+  checkpoint_dir: "outputs/checkpoints"
+  predictions_dir: "outputs/predictions"
+  figures_dir: "outputs/figures"
+  pretrained_clip: null
+  pretrained_llm: null
+
+# ── Model: CLIP Backbone ─────────────────────────────────────────────────────
+model:
+  clip:
+    backbone: "ViT-B/16"
+    pretrained: "openai"
+    image_size: 224
+    freeze: true
+
+  llm:
+    model_name: "Qwen/Qwen2.5-7B-Instruct"
+    device_map: "auto"
+    max_new_tokens: 512
+    temperature: 0.7
+    top_p: 0.9
+    cache_dir: null
+    freeze: true
+
+  text_refiner:
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
+    dropout: 0.1
+    feedforward_dim: 2048
+    trainable: true
+    alpha: 0.5
+
+  local_contrastive:
+    temperature: 0.1
+    top_k: 4
+    bottom_k: 4
+    trainable: true
+
+  alignment:
+    alpha_global: 0.5
+    alpha_local: 0.5
+    normalize_logits: true
+    use_softmax: true
+
+# ── LLM Description Generation ────────────────────────────────────────────────
+llm_descriptions:
+  num_descriptions_per_class: 5
+  prompt_template: |
+    You are a medical imaging expert. Generate {num} diverse, clinically accurate
+    visual descriptions for the disease class: "{class_name}".
+    Each description should focus on distinct radiological or visual features.
+    Output only the descriptions, one per line, without numbering.
+  default_prompts:
+    - "A photo of {class_name}"
+  use_template_prompt: true
+  output_file: "data/prompts/class_descriptions.yaml"
+  generation_batch_size: 8
+  cache_generated: true
+
+# ── Data ──────────────────────────────────────────────────────────────────────
+data:
+  dataset_name: "bone_xray"
+  num_classes: 15
+  num_known_classes: 10
+  num_ood_classes: 5
+  image_size: 224
+  image_mean: [0.485, 0.456, 0.406]
+  image_std: [0.229, 0.224, 0.225]
+  augmentation:
+    train:
+      random_resized_crop: true
+      random_horizontal_flip: true
+      color_jitter: false
+      normalize: true
+    val:
+      resize: 256
+      center_crop: 224
+      normalize: true
+  num_workers: 4
+  pin_memory: true
+  persistent_workers: false
+
+# ── Few-Shot Settings ─────────────────────────────────────────────────────────
+fewshot:
+  n_way: 5
+  k_shot: 1
+  n_query: 15
+  episodes_per_epoch: 200
+  num_episodes_train: 200
+  num_episodes_val: 50
+  num_episodes_test: 100
+  split_by_file: true
+  train_split_file: "data/splits/bone_xray_train.txt"
+  val_split_file: "data/splits/bone_xray_val.txt"
+  test_split_file: "data/splits/bone_xray_test.txt"
+
+# ── Training ───────────────────────────────────────────────────────────────────
+train:
+  epochs: 100
+  batch_size: 16
+  optimizer:
+    type: "AdamW"
+    lr: 0.0001
+    weight_decay: 0.01
+    betas: [0.9, 0.999]
+  scheduler:
+    type: "CosineAnnealingLR"
+    T_max: 100
+    eta_min: 0.000001
+  gradient_clip_norm: 1.0
+  mixed_precision: false
+  warmup_epochs: 5
+  eval_every_n_epochs: 10
+  save_best: true
+  metric_for_best: "accuracy"
+
+# ── Loss Weights ───────────────────────────────────────────────────────────────
+loss:
+  classification:
+    weight: 1.0
+    label_smoothing: 0.0
+  global_alignment:
+    weight: 1.0
+  local_alignment:
+    weight: 1.0
+  local_contrastive:
+    weight: 0.5
+  text_refinement:
+    weight: 0.1
+
+# ── Evaluation ─────────────────────────────────────────────────────────────────
+eval:
+  mode: "fsl"
+  metrics_cls:
+    - "accuracy"
+    - "precision"
+    - "recall"
+    - "f1_score"
+    - "auroc"
+  metrics_ood:
+    - "auroc"
+    - "aupr"
+    - "fpr95"
+  ood:
+    method: "msp"
+    threshold_strategy: "fixed"
+    fixed_threshold: 0.0
+    percentile: 95
+  save_predictions: true
+  save_confusion_matrix: false
+  save_ood_histograms: true
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging:
+  level: "INFO"
+  log_interval: 10
+  tensorboard: true
+  wandb: false
+  wandb_project: "glocal-med"
+  wandb_entity: null
+  log_gradients: false
+  log_weights: false
+
+# ── Checkpoint ─────────────────────────────────────────────────────────────────
+checkpoint:
+  save_last: true
+  save_best: true
+  save_freq: 10
+  resume_from: null
+  load_pretrained_clip: false
+  load_finetuned_only: false

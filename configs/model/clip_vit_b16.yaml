@@ -1,0 +1,24 @@
+# =============================================================================
+# CLIP ViT-B/16 Model Configuration
+# =============================================================================
+
+model_type: "clip_image_encoder"
+
+clip:
+  backbone: "ViT-B/16"
+  pretrained: "openai"
+  image_size: 224
+  patch_size: 16
+  embed_dim: 512
+  vision_width: 768
+  vision_layers: 12
+  vision_heads: 12
+  freeze: true
+  return_local_features: true    # Return per-patch embeddings (for top-k/bottom-k)
+  return_global_feature: true    # Return global CLS token / pooled feature
+
+# For ViT-B/16, local embeddings = sequence of 196 patch embeddings
+# Each patch embedding has dimension = 768 (vision_width)
+local_feat_dim: 768
+global_feat_dim: 512             # CLIP projection maps to 512-dim space
+num_patches: 196                 # (224/16)^2 = 196

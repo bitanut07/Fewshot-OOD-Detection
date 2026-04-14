@@ -1,0 +1,15 @@
+# Local contrastive learning config
+model_type: "local_contrastive"
+local_contrastive:
+  temperature: 0.1
+  top_k: 4
+  bottom_k: 4
+  use_cosine_similarity: true
+  normalize_embeddings: true
+  contrastive_mode: "supervised"
+  num_negatives: 63
+  trainable: true
+  use_momentum_prototype: false
+  momentum: 0.999
+  sim_min: -1.0
+  sim_max: 1.0

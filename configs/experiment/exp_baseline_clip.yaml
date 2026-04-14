@@ -1,0 +1,24 @@
+# Baseline: Standard CLIP without any enhancements
+includes: ["default.yaml", "model/clip_vit_b16.yaml", "data/bone_xray.yaml", "train/fewshot_1shot.yaml"]
+experiment_name: "baseline_clip"
+model:
+  clip:
+    freeze: false
+  text_refiner:
+    trainable: false
+  local_contrastive:
+    trainable: false
+  alignment:
+    alpha_global: 1.0
+    alpha_local: 0.0
+loss:
+  classification:
+    weight: 1.0
+  global_alignment:
+    weight: 0.0
+  local_alignment:
+    weight: 0.0
+  local_contrastive:
+    weight: 0.0
+  text_refinement:
+    weight: 0.0
