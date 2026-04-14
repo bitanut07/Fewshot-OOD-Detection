@@ -138,3 +138,5 @@ class LocalContrastiveLearner(nn.Module):
 
         loss = F.cross_entropy(logits, pos_labels)
         return loss
+
+        
