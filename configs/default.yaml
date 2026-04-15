@@ -1,148 +1,197 @@
 # =============================================================================
-# Default Configuration — Global Settings for GLOCAL FSL-OOD Framework
-# Reference: "Global and Local Vision-Language Alignment for Few-Shot Learning
-#             and Few-Shot OOD Detection"
+# Default Configuration for GLOCAL-FSL-OOD
 # =============================================================================
 
-# ── Experiment ──────────────────────────────────────────────────────────────
-experiment:
-  name: "glocal_fsl_ood"
-  project: "glocal-med"
-  version: "v1.0"
-  seed: 42
-  deterministic: true
-  use_cuda: true
-  gpu_id: 0
-
-# ── Paths ─────────────────────────────────────────────────────────────────────
-paths:
-  data_root: "data/processed"
-  raw_data_root: "data/raw"
-  splits_root: "data/splits"
-  prompts_root: "data/prompts"
-  output_root: "outputs"
-  log_dir: "outputs/logs"
-  checkpoint_dir: "outputs/checkpoints"
-  predictions_dir: "outputs/predictions"
-  figures_dir: "outputs/figures"
-  pretrained_clip: null
-  pretrained_llm: null
-
-# ── Model: CLIP Backbone ─────────────────────────────────────────────────────
+# =============================================================================
+# LLM Configuration (for OFFLINE description generation)
+# =============================================================================
 model:
-  clip:
-    backbone: "ViT-B/16"
-    pretrained: "openai"
-    image_size: 224
-    freeze: true
-
   llm:
     model_name: "Qwen/Qwen2.5-7B-Instruct"
     device_map: "auto"
+    torch_dtype: "float16"
     max_new_tokens: 512
     temperature: 0.7
     top_p: 0.9
+    do_sample: true
     cache_dir: null
     freeze: true
+    trust_remote_code: true
+    repetition_penalty: 1.1
 
-  text_refiner:
-    hidden_dim: 512
-    num_heads: 8
-    num_layers: 2
-    dropout: 0.1
-    feedforward_dim: 2048
-    trainable: true
-    alpha: 0.5
-
-  local_contrastive:
-    temperature: 0.1
-    top_k: 4
-    bottom_k: 4
-    trainable: true
-
-  alignment:
-    alpha_global: 0.5
-    alpha_local: 0.5
-    normalize_logits: true
-    use_softmax: true
-
-# ── LLM Description Generation ────────────────────────────────────────────────
+# =============================================================================
+# LLM Description Generation Configuration (OFFLINE)
+# =============================================================================
 llm_descriptions:
+  enabled: true
+
+  # Number of discriminative questions to generate for the whole dataset
+  num_questions: 10
+
+  # Number of descriptions per class
   num_descriptions_per_class: 5
-  prompt_template: |
-    You are a medical imaging expert. Generate {num} diverse, clinically accurate
-    visual descriptions for the disease class: "{class_name}".
-    Each description should focus on distinct radiological or visual features.
-    Output only the descriptions, one per line, without numbering.
+
+  # Dataset context — injected into prompts so LLM understands the domain.
+  # Can reference dataset name, known class names, and domain summary.
+  # Example values below; override via experiment config or --dataset_desc flag.
+  dataset_description: >
+    A bone X-ray image dataset containing {num_classes} disease classes
+    for few-shot classification and OOD detection.
+    Known classes include: No Finding, Fracture, Osteoarthritis, Bone Lesion,
+    Osteoporosis, Degenerative Joint Disease, Spondylosis, Disc Degeneration,
+    Spinal Stenosis, Scoliosis. OOD classes include: Osteomyelitis, Bone Tumor,
+    Metastatic Bone Disease, Avascular Necrosis, Paget Disease.
+    This dataset is used to evaluate model generalization to unseen disease types.
+
+  # Prompt template for generating discriminative questions
+  question_prompt_template: |
+    You are a medical imaging expert specializing in bone X-ray analysis.
+
+    Dataset description:
+    {dataset_description}
+
+    Task:
+    Generate {num_questions} diagnostic questions that help distinguish between
+    different bone diseases in X-ray images.
+
+    Requirements:
+    - Focus ONLY on visible radiographic features
+    - Do NOT include diagnosis, treatment, or patient history
+    - Questions must help differentiate diseases visually
+    - Avoid referring to specific absolute positions (e.g., left/right/top/bottom)
+
+    Focus on:
+    - bone structure and continuity
+    - fracture patterns and cortical disruption
+    - lesion characteristics (e.g., lytic or sclerotic changes)
+    - bone density variations
+    - structural deformities and alignment abnormalities
+    - presence of abnormal growths or irregular bone shapes
+
+    Output:
+    - One question per line
+    - No numbering
+    - No explanations
+
+  # Prompt template for generating descriptions per class
+  description_prompt_template: |
+    You are a medical imaging expert specializing in bone X-ray interpretation.
+
+    Target disease class: "{class_name}"
+
+    Context:
+    Below are diagnostic questions used to distinguish bone diseases:
+    {questions}
+
+    Task:
+    Generate {num_descriptions} diverse and clinically accurate visual descriptions
+    of this disease as seen in bone X-ray images.
+
+    Requirements:
+    - Each description must be ONE sentence
+    - Focus ONLY on visible radiographic features
+    - Avoid diagnosis, treatment, or clinical symptoms outside the image
+    - Avoid uncertainty words (e.g., "may", "possibly")
+    - Avoid absolute spatial positions (e.g., left/right/top/bottom)
+    - Each description must highlight a distinct visual feature
+    - Use clear and professional medical language
+    - Prefer concise descriptions suitable for a vision-language model
+
+    Focus on:
+    - bone structure and integrity
+    - fracture lines and cortical disruption (if present)
+    - lesion characteristics (e.g., radiolucent or radiopaque regions)
+    - bone density variations
+    - abnormal growths or masses
+    - structural deformities and alignment changes
+    - trabecular pattern changes
+    - bone surface irregularities
+
+    Output:
+    - One description per line
+    - No numbering
+    - No explanations
+
+  # Default prompts used when prompt_template is null in generate_all_descriptions
   default_prompts:
-    - "A photo of {class_name}"
+    questions: |
+      You are a medical imaging expert. Generate {num_questions} diagnostic questions
+      about bone X-ray findings. Focus on visual features only.
+      Output one per line, no numbering.
+    descriptions: |
+      Generate {num_descriptions} descriptions for the disease: "{class_name}".
+      Focus on visible radiographic features only. Output one per line.
+
   use_template_prompt: true
+
+  # Output files
   output_file: "data/prompts/class_descriptions.yaml"
-  generation_batch_size: 8
+  questions_output_file: "data/prompts/class_questions.yaml"
+
+  # Generation settings
+  generation_batch_size: 1
   cache_generated: true
 
-# ── Data ──────────────────────────────────────────────────────────────────────
-data:
-  dataset_name: "bone_xray"
-  num_classes: 15
-  num_known_classes: 10
-  num_ood_classes: 5
-  image_size: 224
-  image_mean: [0.485, 0.456, 0.406]
-  image_std: [0.229, 0.224, 0.225]
-  augmentation:
-    train:
-      random_resized_crop: true
-      random_horizontal_flip: true
-      color_jitter: false
-      normalize: true
-    val:
-      resize: 256
-      center_crop: 224
-      normalize: true
-  num_workers: 4
-  pin_memory: true
-  persistent_workers: false
+# =============================================================================
+# Model Module Configuration
+# =============================================================================
+model_type: "glocal_fsl_ood"
 
-# ── Few-Shot Settings ─────────────────────────────────────────────────────────
-fewshot:
-  n_way: 5
-  k_shot: 1
-  n_query: 15
-  episodes_per_epoch: 200
-  num_episodes_train: 200
-  num_episodes_val: 50
-  num_episodes_test: 100
-  split_by_file: true
-  train_split_file: "data/splits/bone_xray_train.txt"
-  val_split_file: "data/splits/bone_xray_val.txt"
-  test_split_file: "data/splits/bone_xray_test.txt"
+clip:
+  backbone: "ViT-B/16"
+  pretrained: "openai"
+  freeze: true
 
-# ── Training ───────────────────────────────────────────────────────────────────
-train:
-  epochs: 100
-  batch_size: 16
-  optimizer:
-    type: "AdamW"
-    lr: 0.0001
-    weight_decay: 0.01
-    betas: [0.9, 0.999]
-  scheduler:
-    type: "CosineAnnealingLR"
-    T_max: 100
-    eta_min: 0.000001
-  gradient_clip_norm: 1.0
-  mixed_precision: false
-  warmup_epochs: 5
-  eval_every_n_epochs: 10
-  save_best: true
-  metric_for_best: "accuracy"
+text_refiner:
+  text_dim: 512
+  visual_dim: 512
+  hidden_dim: 512
+  num_heads: 8
+  num_layers: 2
+  dropout: 0.1
+  alpha: 0.5
+  trainable: true
 
-# ── Loss Weights ───────────────────────────────────────────────────────────────
+local_contrastive:
+  temperature: 0.1
+  top_k: 4
+  bottom_k: 4
+  use_cosine_similarity: true
+  normalize_embeddings: true
+  contrastive_mode: "supervised"
+  num_negatives: 63
+  trainable: true
+  use_momentum_prototype: false
+  momentum: 0.999
+  sim_min: -1.0
+  sim_max: 1.0
+
+local_region_selector:
+  score_dim: 768
+  selection_mode: "similarity"
+  top_k: 4
+  bottom_k: 4
+  normalize_scores: true
+  trainable: true
+
+alignment:
+  alpha_global: 0.5
+  alpha_local: 0.5
+  normalize_logits: true
+  use_softmax: true
+  logit_mode: "weighted_sum"
+  logit_temperature: 1.0
+  learnable_weights: false
+  text_embed_dim: 512
+  image_global_dim: 512
+  image_local_dim: 768
+
+# =============================================================================
+# Loss Weights
+# =============================================================================
 loss:
   classification:
     weight: 1.0
-    label_smoothing: 0.0
   global_alignment:
     weight: 1.0
   local_alignment:
@@ -152,44 +201,40 @@ loss:
   text_refinement:
     weight: 0.1
 
-# ── Evaluation ─────────────────────────────────────────────────────────────────
+# =============================================================================
+# Training Configuration
+# =============================================================================
+train:
+  epochs: 100
+  batch_size: 4
+  optimizer:
+    type: "AdamW"
+    lr: 0.0002
+    weight_decay: 0.01
+  scheduler:
+    type: "CosineAnnealingLR"
+    T_max: 100
+    eta_min: 0.000001
+  warmup_epochs: 10
+  grad_clip: 1.0
+  mixed_precision: false
+  ema: false
+  ema_decay: 0.999
+
+fewshot:
+  n_way: 5
+  k_shot: 1
+  n_query: 15
+
+# =============================================================================
+# Evaluation Configuration
+# =============================================================================
 eval:
-  mode: "fsl"
-  metrics_cls:
-    - "accuracy"
-    - "precision"
-    - "recall"
-    - "f1_score"
-    - "auroc"
-  metrics_ood:
-    - "auroc"
-    - "aupr"
-    - "fpr95"
-  ood:
-    method: "msp"
-    threshold_strategy: "fixed"
-    fixed_threshold: 0.0
-    percentile: 95
+  checkpoint_path: null
   save_predictions: true
-  save_confusion_matrix: false
-  save_ood_histograms: true
 
-# ── Logging ───────────────────────────────────────────────────────────────────
-logging:
-  level: "INFO"
-  log_interval: 10
-  tensorboard: true
-  wandb: false
-  wandb_project: "glocal-med"
-  wandb_entity: null
-  log_gradients: false
-  log_weights: false
-
-# ── Checkpoint ─────────────────────────────────────────────────────────────────
-checkpoint:
-  save_last: true
-  save_best: true
-  save_freq: 10
-  resume_from: null
-  load_pretrained_clip: false
-  load_finetuned_only: false
+ood:
+  method: "msp"
+  threshold_strategy: "fixed"
+  fixed_threshold: 0.0
+  percentile: 95
