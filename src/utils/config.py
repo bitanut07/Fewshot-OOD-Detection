@@ -62,7 +62,13 @@ def load_config(config_path):
         with open(dp) as f:
             base = yaml.safe_load(f) or {}
     for inc in includes:
+        # Resolve include path relative to:
+        #   1) the current config directory (base_dir)
+        #   2) the configs/ directory (base_dir.parent)
+        #   3) the project root (base_dir.parent.parent)
         ip = base_dir / inc
+        if not ip.exists():
+            ip = base_dir.parent / inc
         if not ip.exists():
             ip = base_dir.parent.parent / inc
         if not ip.exists():

@@ -79,9 +79,7 @@ llm_descriptions:
 
     Target disease class: "{class_name}"
 
-    Context:
-    Below are diagnostic questions used to distinguish bone diseases:
-    {questions}
+    {questions_block}
 
     Task:
     Generate {num_descriptions} diverse and clinically accurate visual descriptions

@@ -1,34 +1,16 @@
 # =============================================================================
 # Text Refinement Module Configuration
-# Based on paper: Text Refinement using Disease-Relevant Visual Embeddings
 # =============================================================================
 
-model_type: "text_refiner"
+model:
+  text_refiner:
+    # DiseaseTextRefiner parameters (see src/models/modules/text_refinement.py)
+    text_dim: 512
+    visual_dim: 512
+    hidden_dim: 512
+    num_heads: 8
+    num_layers: 2
+    dropout: 0.1
+    alpha: 0.5
+    trainable: true
 
-text_refiner:
-  # Architecture
-  input_dim: 512           # Text embedding dimension (from CLIP text encoder)
-  visual_dim: 512          # Visual embedding dimension (from CLIP image encoder)
-  hidden_dim: 512
-  num_heads: 8
-  num_layers: 2
-  dropout: 0.1
-  feedforward_dim: 2048
-
-  # Refinement strategy
-  alpha: 0.5               # Interpolation weight: refined = alpha * text + (1-alpha) * refined_output
-  use_self_attention: true
-  use_cross_attention: true
-  use_ffn: true
-  use_residual: true
-
-  # Trainability
-  trainable: true
-  target_layers: [0, 1]     # Which layers to apply refinement to
-
-  # Normalization
-  layer_norm_eps: 1e-5
-  use_layer_norm: true
-
-# Output: refined text embeddings for each class description
-output_dim: 512

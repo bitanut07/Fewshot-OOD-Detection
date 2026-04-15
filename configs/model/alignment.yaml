@@ -1,17 +1,11 @@
-# Global-local alignment config
-model_type: "global_local_alignment"
-alignment:
-  alpha_global: 0.5
-  alpha_local: 0.5
-  normalize_logits: true
-  use_softmax: true
-  logit_mode: "weighted_sum"
-  logit_temperature: 1.0
-  learnable_weights: false
-  init_global_weight: 0.5
-  init_local_weight: 0.5
-  local_feat_layer: -1
-  align_per_description: false
-  text_embed_dim: 512
-  image_global_dim: 512
-  image_local_dim: 768
+# =============================================================================
+# Global-Local Alignment Configuration
+# =============================================================================
+
+model:
+  alignment:
+    alpha_global: 0.5
+    alpha_local: 0.5
+    logit_temperature: 1.0
+    learnable_weights: false
+

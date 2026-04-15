@@ -1,28 +1,12 @@
 # =============================================================================
-# Local Region Selection Module Configuration
-# Top-k disease-relevant, Bottom-k disease-irrelevant region selection
+# Local Region Selector Configuration
 # =============================================================================
 
-model_type: "local_region_selector"
+model:
+  local_region_selector:
+    top_k: 4
+    bottom_k: 4
+    similarity_metric: "cosine"
+    normalize_before_sim: true
+    aggregate_method: "mean"
 
-region_selector:
-  # Selection strategy: cosine similarity between local patches and class prototype
-  similarity_metric: "cosine"    # Options: cosine, dot_product, euclidean
-
-  # Region selection counts
-  top_k: 4                       # Number of disease-relevant regions (highest similarity)
-  bottom_k: 4                    # Number of disease-irrelevant regions (lowest similarity)
-
-  # For ViT-B/16: 196 patches total, we select top_k + bottom_k = 8
-  max_patches: 196
-  min_patches: 2                 # Minimum patches to select if top_k/bottom_k exceeds available
-
-  # Aggregation
-  aggregate_method: "mean"       # Options: mean, cls_token, attention_weighted
-
-  # Selection based on class prototype or global average
-  selection_mode: "per_class"    # Options: per_class, global_average
-  class_prototype_source: "support_set"  # Use support set average as prototype
-
-  # Whether to normalize patch embeddings before similarity computation
-  normalize_before_sim: true

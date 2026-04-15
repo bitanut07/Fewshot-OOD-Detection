@@ -66,6 +66,12 @@ def main():
         "dataset_description",
         "A bone X-ray dataset with multiple bone condition classes."
     )
+    # Allow lightweight templating in config strings, e.g. "{num_classes}".
+    try:
+        dataset_desc = dataset_desc.format(num_classes=len(class_names))
+    except Exception:
+        # Keep original string if it contains other braces/placeholders.
+        pass
 
     # Prompt templates from config (if provided)
     question_prompt = cfg.llm_descriptions.get("question_prompt_template")

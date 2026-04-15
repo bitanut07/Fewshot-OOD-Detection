@@ -358,6 +358,7 @@ class LLMWrapper:
             )
 
         if questions:
+            questions_text = "\n".join(questions[:10])
             questions_block = (
                 "Context:\n"
                 "Below are diagnostic questions used to distinguish bone diseases:\n"
@@ -365,14 +366,18 @@ class LLMWrapper:
                 + "\n\n"
             )
         elif dataset_description:
+            questions_text = ""
             questions_block = f"Dataset context: {dataset_description}\n\n"
         else:
+            questions_text = ""
             questions_block = ""
 
         prompt = prompt_template.format(
             class_name=class_name,
             num_descriptions=num_descriptions,
             questions_block=questions_block,
+            questions=questions_text,
+            dataset_description=dataset_description or "",
         )
 
         raw = self._generate(prompt)
