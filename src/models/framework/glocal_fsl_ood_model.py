@@ -150,12 +150,17 @@ class GLocalFSLOODModel(nn.Module):
     def _build_text_embeddings(self) -> None:
         """Build and cache text embeddings for all classes and descriptions."""
         all_texts = []
-        self.text_per_class = []  # Index mapping
+        self.text_per_class = []  # number of texts per class (for pooling)
         for cls_name in self.class_names:
             texts = [f"A photo of {cls_name}"]
-            self.text_per_class.append(len(texts))
             if cls_name in self.descriptions:
-                texts.extend(self.descriptions[cls_name])
+                descs = self.descriptions.get(cls_name) or []
+                if not isinstance(descs, list):
+                    raise TypeError(
+                        f"Descriptions for class '{cls_name}' must be a list of strings, got {type(descs)}"
+                    )
+                texts.extend([d for d in descs if isinstance(d, str) and d.strip()])
+            self.text_per_class.append(len(texts))
             all_texts.extend(texts)
 
         self.all_text_embeddings = self.text_encoder.encode_text(all_texts, normalize=True)
@@ -203,15 +208,11 @@ class GLocalFSLOODModel(nn.Module):
         global_feat, local_feat = self.image_encoder(images, return_local=True)
         # global_feat: [B, embed_dim], local_feat: [B, num_patches, local_dim]
 
-        # Refine text embeddings (optional)
+        # Refine per-class text prototypes (optional)
         if self.text_refiner is not None:
-            # Use global image feature to refine text
-            refined_text = self.text_refiner(
-                self.all_text_embeddings.unsqueeze(0).expand(B, -1, -1),
-                global_feat.unsqueeze(1),
-            )
-            # Use refined text for alignment
-            text_for_align = refined_text.mean(dim=1)  # [B, embed_dim]
+            base_text = self.class_prototypes.to(self.device).unsqueeze(0).expand(B, -1, -1)
+            refined_text = self.text_refiner(base_text, global_feat.unsqueeze(1))
+            text_for_align = refined_text  # [B, num_classes, embed_dim]
         else:
             text_for_align = self.class_prototypes.to(self.device)  # [num_classes, embed_dim]
 
@@ -221,7 +222,8 @@ class GLocalFSLOODModel(nn.Module):
             if local_feat.shape[-1] != self.embed_dim:
                 # TODO: project local features
                 pass
-            region_result = self.region_selector(local_feat, self.class_prototypes.to(self.device))
+            proto_for_region = self.class_prototypes.to(self.device).unsqueeze(0).expand(B, -1, -1)
+            region_result = self.region_selector(local_feat, proto_for_region)
             relevant_feats = region_result["relevant_features"]
             irrelevant_feats = region_result["irrelevant_features"]
         else:
@@ -239,19 +241,7 @@ class GLocalFSLOODModel(nn.Module):
 
         # Global-Local Alignment for final logits
         use_local = local_feat is not None and self.region_selector is not None
-        if text_for_align.dim() == 2:
-            text_for_align_expanded = text_for_align.unsqueeze(0).expand(B, -1, -1)
-        else:
-            text_for_align_expanded = text_for_align
-
-        # Flatten for aligner: text [B*num_classes, embed_dim]
-        text_flat = text_for_align_expanded.reshape(-1, self.embed_dim)
-        global_feat_exp = global_feat  # [B, embed_dim]
-        local_feat_exp = local_feat  # [B, num_patches, local_dim] or None
-
-        logits, align_metrics = self.aligner(
-            global_feat_exp, local_feat_exp, text_flat, use_local=use_local
-        )
+        logits, align_metrics = self.aligner(global_feat, local_feat, text_for_align, use_local=use_local)
         metrics.update(align_metrics)
 
         return {
