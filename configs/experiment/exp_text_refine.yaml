@@ -1,5 +1,5 @@
 # Experiment: CLIP + Text Refinement (no local contrastive)
-includes: ["default.yaml", "model/clip_vit_b16.yaml", "model/text_refiner.yaml", "data/bone_xray.yaml", "train/fewshot_1shot.yaml"]
+includes: ["model/clip_vit_b16.yaml", "model/text_refiner.yaml", "data/bone_xray.yaml", "train/fewshot_1shot.yaml"]
 experiment_name: "text_refine"
 model:
   text_refiner:

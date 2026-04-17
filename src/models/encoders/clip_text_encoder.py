@@ -36,19 +36,22 @@ class CLIPTextEncoder(nn.Module):
         device: Optional[torch.device] = None,
     ) -> None:
         super().__init__()
-        self.backbone = backbone
+        # open_clip uses names like "ViT-B-16". Allow both "ViT-B/16" and "ViT-B-16".
+        self.backbone = backbone.replace("/", "-")
         self.pretrained = pretrained
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Load CLIP model (only need text encoder)
         self.model, _, _ = open_clip.create_model_and_transforms(
-            backbone, pretrained=pretrained, device=self.device
+            self.backbone, pretrained=pretrained, device=self.device
         )
         self.model.eval() if freeze else None
 
-        self.embed_dim = self.model.text.embed_dim  # type: ignore
-        self.context_length = self.model.text.context_length  # type: ignore
-        self.vocab_size = self.model.text.vocab_size  # type: ignore
+        # open_clip exposes text components directly on the CLIP module
+        # (token_embedding, positional_embedding, ln_final, text_projection).
+        self.embed_dim = int(getattr(self.model, "text_projection").shape[1])  # type: ignore
+        self.context_length = int(getattr(self.model, "positional_embedding").shape[0])  # type: ignore
+        self.vocab_size = int(getattr(self.model, "token_embedding").weight.shape[0])  # type: ignore
 
         self.freeze = freeze
         if freeze:

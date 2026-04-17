@@ -1,2 +1,5 @@
 venv/
 output/
+__pycache__/
+glali/
+.DS_Store

@@ -1,5 +1,5 @@
 # Baseline: Standard CLIP without any enhancements
-includes: ["default.yaml", "model/clip_vit_b16.yaml", "data/bone_xray.yaml", "train/fewshot_1shot.yaml"]
+includes: ["model/clip_vit_b16.yaml", "data/bone_xray.yaml", "train/fewshot_1shot.yaml"]
 experiment_name: "baseline_clip"
 model:
   clip:

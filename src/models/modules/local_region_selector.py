@@ -88,7 +88,7 @@ class LesionRegionSelector(nn.Module):
         bottom_k = min(self.bottom_k, sim.shape[-1])
 
         top_k_indices = torch.topk(sim, top_k, dim=-1).indices  # [B, top_k]
-        bottom_k_indices = torch.bottomk(sim, bottom_k, dim=-1).indices  # [B, bottom_k]
+        bottom_k_indices = torch.topk(sim, bottom_k, dim=-1, largest=False).indices  # [B, bottom_k]
 
         # Gather features by indices
         batch_indices = torch.arange(
