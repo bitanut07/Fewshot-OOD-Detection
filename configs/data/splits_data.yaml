@@ -1,0 +1,93 @@
+# BTXRD + FracAtlas Few-shot OOD Dataset Configuration
+dataset_type: "bone_xray"
+
+data:
+  dataset_name: "splits_dataset"
+  raw_root: "data/raw"
+  data_root: "data/processed/image_processing"
+  image_dir: "images"
+  manifest_file: "data/processed/image_processing/manifest.csv"
+
+  image_size: 224
+  image_mean: [0.485, 0.456, 0.406]
+  image_std: [0.229, 0.224, 0.225]
+
+  num_classes: 8
+  num_known_classes: 6
+  num_ood_classes: 2
+
+  class_names:
+    - "giant cell tumor"
+    - "osteochondroma"
+    - "osteofibroma"
+    - "osteosarcoma"
+    - "simple bone cyst"
+    - "synovial osteochondroma"
+    - "no_tumor"
+    - "fractured"
+
+  known_classes: [0, 1, 2, 3, 4, 5]
+  ood_classes: [6, 7]
+
+  train_split_file: "data/splits/splits_dataset/8shot_seed1_train.txt"
+  val_split_file: "data/splits/splits_dataset/8shot_seed1_val.txt"
+  test_split_file: "data/splits/splits_dataset/8shot_seed1_test.txt"
+
+  cache_images: false
+  num_workers: 4
+  pin_memory: true
+
+label_settings:
+  id_labels:
+    - "giant cell tumor"
+    - "osteochondroma"
+    - "osteofibroma"
+    - "osteosarcoma"
+    - "simple bone cyst"
+    - "synovial osteochondroma"
+
+  ood_labels:
+    - "no_tumor"
+    - "fractured"
+
+sources:
+  BTXRD:
+    source_code: "01"
+    annotation_file: "data/raw/BTXRD/dataset.xlsx"
+    image_root: "data/raw/BTXRD/images"
+    parser_output_csv: "data/processed/data_processing/btxrd.csv"
+
+  FracAtlas:
+    source_code: "02"
+    annotation_file: "data/raw/FracAtlas/dataset.csv"
+    image_root: "data/raw/FracAtlas/images"
+    parser_output_csv: "data/processed/data_processing/fracatlas.csv"
+
+preprocessing:
+  valid_exts: [".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"]
+  min_height: 128
+  min_width: 128
+  max_blank_std: 5.0
+  min_foreground_ratio: 0.01
+  apply_clahe: true
+  save_size: [224, 224]
+
+augmentation:
+  enable: true
+  variants:
+    orig: "00"
+    rot90: "01"
+    rot180: "02"
+    rot270: "03"
+    stretch_0: "04"
+    stretch_1: "05"
+
+  stretch_scales:
+    - [1.15, 1.00]
+    - [1.00, 1.15]
+
+split:
+  val_ratio: 0.2
+  test_ratio: 0.2
+  shots: [8, 16]
+  seeds: [1, 2, 3]
