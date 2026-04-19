@@ -43,21 +43,34 @@ class CLIPImageEncoder(nn.Module):
         device: Optional[torch.device] = None,
     ) -> None:
         super().__init__()
-        self.backbone = backbone
+        # open_clip uses names like "ViT-B-16". Allow both "ViT-B/16" and "ViT-B-16".
+        self.backbone = backbone.replace("/", "-")
         self.pretrained = pretrained
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
         # Load CLIP model
         self.model, _, self.preprocess = open_clip.create_model_and_transforms(
-            backbone, pretrained=pretrained, device=self.device
+            self.backbone, pretrained=pretrained, device=self.device
         )
         self.model.eval() if freeze else None
 
-        # Extract dimensions from model
-        # ViT-B/16: embed_dim=512, local_dim=768, num_patches=196
-        self.embed_dim = self.model.visual.embed_dim  # type: ignore
-        self.local_dim = self.model.visual.width  # type: ignore
-        self.num_patches = (self.model.visual.image_size[0] // self.model.visual.patch_size[0]) ** 2  # type: ignore
+        # Extract dimensions from model.
+        # For ViT-B-16: global projected dim=512; token dim=768; num_patches=196 (224/16)^2.
+        self.embed_dim = int(getattr(self.model.visual, "output_dim", 512))  # type: ignore
+        image_size = getattr(self.model.visual, "image_size", 224)  # type: ignore
+        patch_size = getattr(self.model.visual, "patch_size", 16)  # type: ignore
+        if isinstance(image_size, (tuple, list)):
+            image_size_0 = int(image_size[0])
+        else:
+            image_size_0 = int(image_size)
+        if isinstance(patch_size, (tuple, list)):
+            patch_size_0 = int(patch_size[0])
+        else:
+            patch_size_0 = int(patch_size)
+        self.num_patches = (image_size_0 // patch_size_0) ** 2
+
+        # We return local features projected to the same embedding space as text (embed_dim).
+        self.local_dim = self.embed_dim
 
         self.freeze = freeze
         if freeze:
@@ -81,30 +94,34 @@ class CLIPImageEncoder(nn.Module):
 
         Returns:
             global_feat: Global pooled feature [B, embed_dim]
-            local_feat: Per-patch features [B, num_patches, local_dim] or None
+            local_feat: Per-patch features [B, num_patches, embed_dim] or None
         """
-        # Get CLS token + all patch tokens from vision transformer
-        x = self.model.visual.conv1(images)  # [B, width, h, w]
-        b, c, h, w = x.shape
-        x = x.reshape(b, c, h * w).permute(0, 2, 1)  # [B, h*w, width]
-
-        # Add class token and positional embedding
-        cls_token = self.model.visual.class_token  # type: ignore
-        cls_tokens = cls_token.expand(x.shape[0], -1, -1)
-        x = torch.cat([cls_tokens, x], dim=1)
-        x = x + self.model.visual.positional_embedding  # type: ignore
-
-        # Pass through transformer blocks
-        x = self.model.visual.transformer(x)  # type: ignore
-
-        # Split into global (CLS) and local (patch) features
-        global_feat = x[:, 0]  # [B, embed_dim]
+        # Global feature (projected to embed_dim by open_clip)
+        global_feat = self.model.encode_image(images)
 
         if not return_local:
             return global_feat, None
 
-        # Project to embed_dim if needed
-        local_feat = x[:, 1:]  # [B, num_patches, width]
+        # Local patch tokens from the last ViT block, then project them to embed_dim.
+        # forward_intermediates returns:
+        #   - image_intermediates[-1]        : [B, num_patches, token_dim]
+        #   - image_intermediates_prefix[-1] : [B, 1, token_dim]
+        out = self.model.visual.forward_intermediates(  # type: ignore[attr-defined]
+            images,
+            indices=None,
+            output_fmt="NLC",
+            output_extra_tokens=True,
+        )
+        patch_tokens = out["image_intermediates"][-1]  # [B, num_patches, token_dim]
+        # Project patch tokens to embed_dim using the same ln_post + proj as the CLS token.
+        ln_post = getattr(self.model.visual, "ln_post", None)  # type: ignore
+        proj = getattr(self.model.visual, "proj", None)  # type: ignore
+        if ln_post is None or proj is None:
+            raise RuntimeError("open_clip visual model does not expose ln_post/proj for token projection")
+
+        patch_tokens = ln_post(patch_tokens)
+        local_feat = patch_tokens @ proj  # [B, num_patches, embed_dim]
+
         return global_feat, local_feat
 
     def forward(

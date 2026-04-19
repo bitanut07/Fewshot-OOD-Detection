@@ -142,6 +142,7 @@ class RefinementLayer(nn.Module):
         self.hidden_dim = hidden_dim
         self.num_heads = num_heads
         self.head_dim = hidden_dim // num_heads
+        self.dropout = nn.Dropout(dropout)
 
         assert hidden_dim % num_heads == 0, "hidden_dim must be divisible by num_heads"
 
