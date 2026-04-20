@@ -67,9 +67,8 @@ preprocessing:
   valid_exts: [".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"]
   min_height: 128
   min_width: 128
-  max_blank_std: 5.0
-  min_foreground_ratio: 0.01
-  apply_clahe: true
+  white_thresh: 245
+  white_ratio_threshold: 0.3
   save_size: [224, 224]
 
 augmentation:
@@ -79,15 +78,9 @@ augmentation:
     rot90: "01"
     rot180: "02"
     rot270: "03"
-    stretch_0: "04"
-    stretch_1: "05"
-
-  stretch_scales:
-    - [1.15, 1.00]
-    - [1.00, 1.15]
 
 split:
-  val_ratio: 0.2
-  test_ratio: 0.2
+  val_ratio: 0.15
+  test_ratio: 0.15
   shots: [8, 16]
   seeds: [1, 2, 3]
