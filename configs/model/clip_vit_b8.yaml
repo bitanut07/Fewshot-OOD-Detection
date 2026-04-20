@@ -1,11 +1,11 @@
 # =============================================================================
-# CLIP ViT-B/16 (open_clip) Configuration
+# CLIP ViT-B/8 (open_clip) Configuration
 # =============================================================================
 
 model:
   clip:
-    # open_clip naming uses "ViT-B-16" (we also accept "ViT-B/16" in code)
-    backbone: "ViT-B-16"
+    # open_clip naming uses "ViT-B-8" (we also accept "ViT-B/8" in code)
+    backbone: "ViT-B-8"
     pretrained: "openai"
     freeze: true
 
@@ -15,10 +15,10 @@ model:
 
     # Input settings (should match dataset transforms)
     image_size: 224
-    patch_size: 16
+    patch_size: 8
 
     # Embedding dims after projection (global + local)
     embed_dim: 512
     local_feat_dim: 512
-    num_patches: 196  # (224/16)^2
+    num_patches: 64  # (224/8)^2
 
