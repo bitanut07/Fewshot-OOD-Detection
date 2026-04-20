@@ -3,3 +3,5 @@ output/
 glali/
 __pycache__/
 .DS_Store
+data/raw/
+data/processed/
