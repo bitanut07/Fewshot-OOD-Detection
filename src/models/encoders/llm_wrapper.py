@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -92,6 +93,7 @@ class LLMWrapper:
         # Lazy-loaded attributes
         self.model: Optional[AutoModelForCausalLM] = None
         self.tokenizer: Optional[AutoTokenizer] = None
+        self._generation_call_count = 0
 
     # -------------------------------------------------------------------------
     # Model loading
@@ -139,7 +141,15 @@ class LLMWrapper:
         Returns:
             Raw assistant response string.
         """
+        self._generation_call_count += 1
+        call_id = self._generation_call_count
+        call_start = time.time()
+        print(
+            f"[LLMWrapper][call={call_id}] Start generation "
+            f"(prompt_chars={len(prompt)})."
+        )
         self._load_model()
+        print(f"[LLMWrapper][call={call_id}] Model is ready.")
 
         mt = max_new_tokens if max_new_tokens is not None else self.max_new_tokens
         tp = temperature if temperature is not None else self.temperature
@@ -148,13 +158,26 @@ class LLMWrapper:
 
         # Only use sampling when temperature > 0
         do_sample = tp > 0.0
+        print(
+            f"[LLMWrapper][call={call_id}] Params: max_new_tokens={mt}, "
+            f"temperature={tp}, top_p={pp}, repetition_penalty={rp}, do_sample={do_sample}."
+        )
 
         messages = [{"role": "user", "content": prompt}]
+        prep_start = time.time()
+        print(f"[LLMWrapper][call={call_id}] Building chat template and tokenizing...")
         text = self.tokenizer.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True
         )
         inputs = self.tokenizer([text], return_tensors="pt").to(self.model.device)
+        input_len = int(inputs["input_ids"].shape[-1])
+        print(
+            f"[LLMWrapper][call={call_id}] Tokenization done in {time.time() - prep_start:.1f}s "
+            f"(input_tokens={input_len})."
+        )
 
+        gen_start = time.time()
+        print(f"[LLMWrapper][call={call_id}] Calling model.generate() ...")
         with torch.no_grad():
             outputs = self.model.generate(
                 **inputs,
@@ -164,8 +187,19 @@ class LLMWrapper:
                 do_sample=do_sample,
                 repetition_penalty=rp,
             )
+        out_len = int(outputs.shape[-1])
+        print(
+            f"[LLMWrapper][call={call_id}] model.generate() finished in {time.time() - gen_start:.1f}s "
+            f"(total_output_tokens={out_len}, generated_tokens={max(0, out_len - input_len)})."
+        )
 
+        decode_start = time.time()
+        print(f"[LLMWrapper][call={call_id}] Decoding output...")
         full_output = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        print(
+            f"[LLMWrapper][call={call_id}] Decoding done in {time.time() - decode_start:.1f}s "
+            f"(output_chars={len(full_output)})."
+        )
 
         # Extract assistant portion — split on last "assistant" marker
         marker_pos = full_output.rfind("assistant")
@@ -175,6 +209,10 @@ class LLMWrapper:
             # Fallback: strip the prompt portion
             response = full_output[len(text):].strip()
 
+        print(
+            f"[LLMWrapper][call={call_id}] Generation completed in {time.time() - call_start:.1f}s "
+            f"(response_chars={len(response)})."
+        )
         return response
 
     # -------------------------------------------------------------------------

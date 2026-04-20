@@ -125,6 +125,7 @@ llm_descriptions:
   # Output files
   output_file: "data/prompts/class_descriptions.yaml"
   questions_output_file: "data/prompts/class_questions.yaml"
+  glali_output_file: "data/prompts/class_descriptions.json"
 
   # Generation settings
   generation_batch_size: 1

@@ -101,3 +101,6 @@ IMG<mã dữ liệu><số thứ tự ảnh 5 chữ số><mã đa dạng>
 1. Chạy file parse của BTXRD
 2. Chạy file parse của FracAtlas
 3. Chạy file `splits_data.py`
+
+## LLM description generation
+- Đăng nhập và Hugging-Face: chạy lệnh `huggingface-cli login`
