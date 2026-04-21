@@ -81,6 +81,39 @@ CLASS_DISTINCTIVE_TERMS: Dict[str, Set[str]] = {
     },
 }
 
+CLASS_RULES: Dict[str, Dict[str, Set[str]]] = {
+    "osteosarcoma": {
+        "preferred": {"sunburst", "codman", "periosteal", "cortical destruction", "mixed lytic-sclerotic", "soft tissue"},
+        "suspicious": {"smooth", "well-defined solitary", "benign", "pedunculated"},
+        "forbidden": {"cartilage cap", "medullary continuity", "intra-articular loose bodies"},
+    },
+    "giant cell tumor": {
+        "preferred": {"expansile", "lytic", "cortical thinning", "septation", "eccentric", "subarticular"},
+        "suspicious": {"sunburst", "codman", "aggressive periosteal"},
+        "forbidden": {"pedunculated exostosis", "medullary continuity"},
+    },
+    "osteochondroma": {
+        "preferred": {"metaphyseal", "bony projection", "pedunculated", "sessile", "exostosis", "cortical continuity", "medullary continuity", "cartilage cap"},
+        "suspicious": {"central lytic", "aggressive periosteal", "soft tissue mass"},
+        "forbidden": {"sunburst", "codman triangle", "permeative"},
+    },
+    "simple bone cyst": {
+        "preferred": {"unilocular", "central", "lytic", "well-defined", "no periosteal", "medullary", "diaphyseal"},
+        "suspicious": {"soft tissue mass", "sunburst", "codman", "aggressive"},
+        "forbidden": {"periosteal reaction", "moth-eaten", "permeative"},
+    },
+    "synovial osteochondroma": {
+        "preferred": {"intra-articular", "periarticular", "calcified nodules", "loose bodies", "synovial"},
+        "suspicious": {"ground-glass", "aggressive periosteal", "sunburst"},
+        "forbidden": {"codman", "permeative destruction"},
+    },
+    "osteofibroma": {
+        "preferred": {"cortical", "fibro-osseous", "well-defined", "expansile", "sclerotic border"},
+        "suspicious": {"sunburst", "codman", "large soft tissue mass"},
+        "forbidden": {"aggressive periosteal", "permeative", "moth-eaten"},
+    },
+}
+
 # Forbidden phrases that indicate generic or low-quality output
 FORBIDDEN_PHRASES: List[str] = [
     "this x-ray shows", "the image reveals", "the radiograph demonstrates",
@@ -115,6 +148,7 @@ class ScoredDescription:
     length_score: float
     has_forbidden: bool
     weak_start: bool
+    class_rule_hits: Dict[str, List[str]]
 
     def __lt__(self, other: "ScoredDescription") -> bool:
         return self.total_score < other.total_score
@@ -192,6 +226,23 @@ class DescriptionScorer:
         # Weak start check
         weak_start = bool(_WEAK_STARTS_RE.match(text))
 
+        rule_hits = {"preferred": [], "suspicious": [], "forbidden": []}
+        class_bonus = 0.0
+        if class_name and class_name.lower() in CLASS_RULES:
+            rules = CLASS_RULES[class_name.lower()]
+            for t in rules["preferred"]:
+                if t in lower:
+                    rule_hits["preferred"].append(t)
+                    class_bonus += 2.0
+            for t in rules["suspicious"]:
+                if t in lower:
+                    rule_hits["suspicious"].append(t)
+                    class_bonus -= 2.5
+            for t in rules["forbidden"]:
+                if t in lower:
+                    rule_hits["forbidden"].append(t)
+                    class_bonus -= 6.0
+
         # Total score
         total = (
             radio_count * self.w_radio
@@ -199,6 +250,7 @@ class DescriptionScorer:
             + length_score * self.w_length
             + (self.penalty_forbidden if has_forbidden else 0)
             + (self.penalty_weak if weak_start else 0)
+            + class_bonus
         )
 
         return ScoredDescription(
@@ -209,6 +261,7 @@ class DescriptionScorer:
             length_score=length_score,
             has_forbidden=has_forbidden,
             weak_start=weak_start,
+            class_rule_hits=rule_hits,
         )
 
     def score_batch(

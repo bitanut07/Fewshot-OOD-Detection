@@ -89,6 +89,7 @@ def main():
     parser.add_argument("--num_attributes", type=int, default=None,
                         help="Number of discriminative attributes per class (Stage A)")
     parser.add_argument("--num_descriptions", type=int, default=None)
+    parser.add_argument("--min_final_descriptions", type=int, default=5)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--deterministic", action="store_true")
     parser.add_argument(
@@ -219,6 +220,14 @@ def main():
             descriptions = llm.generate_descriptions(
                 cls_name, num_d, other_classes, attributes, questions
             )
+            if len(descriptions) < args.min_final_descriptions:
+                need = args.min_final_descriptions - len(descriptions)
+                descriptions = llm._targeted_retry(  # noqa: SLF001 - intentional fallback
+                    class_name=cls_name,
+                    existing=descriptions,
+                    num_needed=need,
+                    other_classes=other_classes,
+                )
             log.info("  → %d descriptions", len(descriptions))
 
             all_descriptions[cls_name] = descriptions
@@ -264,6 +273,7 @@ def main():
             num_questions=num_q,
             num_attributes=num_a,
             num_descriptions=num_d,
+            min_descriptions_per_class=args.min_final_descriptions,
             force_regenerate=True,  # Already checked cache above
         )
 

@@ -28,7 +28,7 @@ from typing import Any, Dict, List, Optional
 
 from .base_generator import BaseTextGenerator, GenerationConfig
 from .cache_manager import CacheManager, build_class_entry, build_output_payload
-from .description_scorer import DescriptionScorer
+from .description_scorer import CLASS_RULES, DescriptionScorer
 from .hf_local_generator import HFLocalGenerator
 from .output_cleaner import OutputCleaner
 from .prompt_builder import PromptBuilder
@@ -267,6 +267,8 @@ class LLMWrapper:
         if self._quality_enabled():
             class_report = self._quality_trace["classes"].setdefault(class_name, {})
             class_report.setdefault("description_candidates", [])
+            class_report.setdefault("regeneration_triggered", False)
+            class_report.setdefault("class_min_satisfied", False)
 
         # First pass: generate with main prompt
         for attempt in range(1, self.max_retries + 1):
@@ -287,6 +289,7 @@ class LLMWrapper:
                         "length_score": scored.length_score,
                         "weak_start": scored.weak_start,
                         "has_forbidden": scored.has_forbidden,
+                        "class_rule_hits": scored.class_rule_hits,
                     }
                     item["attempt"] = attempt
                     item["stage"] = "descriptions_main"
@@ -313,6 +316,8 @@ class LLMWrapper:
 
         # Second pass: targeted retry for missing descriptions
         if len(all_lines) < num_descriptions:
+            if class_report is not None:
+                class_report["regeneration_triggered"] = True
             all_lines = self._targeted_retry(
                 class_name=class_name,
                 existing=all_lines,
@@ -338,11 +343,16 @@ class LLMWrapper:
         """Targeted retry: generate more descriptions avoiding existing ones."""
         log.info("Targeted retry for '%s': need %d more", class_name, num_needed)
 
+        class_rules = CLASS_RULES.get(class_name.lower(), {})
+        preferred = sorted(list(class_rules.get("preferred", set())))[:8]
+        avoid = sorted(list(class_rules.get("forbidden", set()) | class_rules.get("suspicious", set())))[:10]
         prompt = self.prompt_builder.build_retry_prompt(
             class_name=class_name,
             num_needed=num_needed + 2,  # Request extra to account for filtering
             existing_descriptions=existing,
             other_classes=other_classes,
+            preferred_features=preferred,
+            avoid_features=avoid,
         )
 
         result = list(existing)
@@ -367,6 +377,7 @@ class LLMWrapper:
                         "length_score": scored.length_score,
                         "weak_start": scored.weak_start,
                         "has_forbidden": scored.has_forbidden,
+                        "class_rule_hits": scored.class_rule_hits,
                     }
                     item["attempt"] = attempt
                     item["stage"] = "descriptions_retry"
@@ -398,6 +409,7 @@ class LLMWrapper:
         num_questions: int = 10,
         num_attributes: int = 6,
         num_descriptions: int = 8,
+        min_descriptions_per_class: int = 5,
         force_regenerate: bool = False,
     ) -> dict:
         """Full multi-stage generation pipeline for all known ID classes.
@@ -484,6 +496,33 @@ class LLMWrapper:
                 )
                 classes_data[cls_name]["descriptions"] = topup[:num_descriptions]
                 classes_data[cls_name]["metadata"]["num_descriptions"] = len(classes_data[cls_name]["descriptions"])
+
+            if len(classes_data[cls_name]["descriptions"]) < min_descriptions_per_class:
+                still_need = min_descriptions_per_class - len(classes_data[cls_name]["descriptions"])
+                log.warning(
+                    "  '%s': below minimum (%d). Triggering survival retry for %d descriptions.",
+                    cls_name, min_descriptions_per_class, still_need
+                )
+                extra = self._targeted_retry(
+                    class_name=cls_name,
+                    existing=classes_data[cls_name]["descriptions"],
+                    num_needed=still_need,
+                    other_classes=[c for c in class_names if c != cls_name],
+                )
+                classes_data[cls_name]["descriptions"] = extra[:max(num_descriptions, min_descriptions_per_class)]
+                classes_data[cls_name]["metadata"]["num_descriptions"] = len(classes_data[cls_name]["descriptions"])
+
+            if self._quality_enabled():
+                cr = self._quality_trace["classes"].setdefault(cls_name, {})
+                cr["final_descriptions"] = classes_data[cls_name]["descriptions"]
+                cr["class_min_required"] = min_descriptions_per_class
+                cr["class_min_satisfied"] = len(classes_data[cls_name]["descriptions"]) >= min_descriptions_per_class
+                if not cr["class_min_satisfied"]:
+                    cr["failure_reason"] = "insufficient_valid_descriptions_after_retries"
+                    log.warning(
+                        "Class '%s' still below minimum descriptions (%d/%d) after retries.",
+                        cls_name, len(classes_data[cls_name]["descriptions"]), min_descriptions_per_class
+                    )
 
         # Step 4: Build and save payload
         payload = build_output_payload(

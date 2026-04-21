@@ -2,7 +2,7 @@ schema_version: 3
 dataset_name: bone_xray
 model_name: Qwen/Qwen2.5-7B-Instruct
 seed: 42
-generated_at: '2026-04-21T09:25:23.444678+00:00'
+generated_at: '2026-04-21T09:58:23.794265+00:00'
 generation_config:
   max_new_tokens: 512
   temperature: 0.3
@@ -18,15 +18,11 @@ class_names:
 - simple bone cyst
 - synovial osteochondroma
 questions:
-- Lesion is centrally located versus eccentrically positioned?
 - Margin shows a clear sclerotic border versus an irregular margin without sclerosis?
 - Cortical integrity is preserved versus thinned and partially breached?
-- Matrix appears ground-glass dense versus cloud-like opacity?
 - Growth pattern is expansive with destruction of the cortex versus contained within
   the medullary cavity?
 - Tumor presents as a single lesion versus multiple discrete foci?
-- Soft tissue mass extends beyond the margins of the bone versus remains confined
-  to the bony confines?
 - Lytic component predominates over sclerotic changes versus vice versa?
 - Sclerosis around the lesion is prominent versus minimal?
 classes:
@@ -40,18 +36,16 @@ classes:
     - cortical thinning and bulging
     - multilocular lucency with septa
     descriptions:
-    - Expansile growth pattern with cortical breach in scapula.
-    - Sunburst periosteal reaction around lytic lesion in radius.
-    - Centrally located lytic lesion in distal femur.
     - Irregular sclerotic margins surrounding lytic area in tibia.
-    - Prominent soft tissue mass extending beyond diaphysis in humerus.
-    - Cortical thinning and bulging noted in proximal fibula.
-    - Predominant lytic change with minimal sclerosis in ulna.
-    - Giant cell tumor presents as a multilocular lucency with septations in the metaphysis
-      of the femur.
+    - Cortical thinning and bulging noted at site of lytic lesion.
+    - Prominent soft tissue mass extending beyond cortical boundary.
+    - Lytic lesion with punctate calcifications in metaphyseal region.
+    - Giant cell tumor exhibits central lucency within diaphysis.
+    - Irregular erosive changes with scalloped margin along cortex.
+    - Central expansile lesion with septations in distal femur.
     metadata:
       num_attributes: 6
-      num_descriptions: 8
+      num_descriptions: 7
   osteochondroma:
     default_prompt: a radiograph of osteochondroma
     attributes:
@@ -61,18 +55,10 @@ classes:
     - unicentric solitary growth
     - juxtacortical location
     - broad based pedicle
-    descriptions:
-    - Central, expansile lytic lesion with intact cortex.
-    - Eccentric, pedunculated mass with ground-glass matrix.
-    - Pedunculated mass at the metaphysis with a chondroid cap.
-    - Unicentric, well-defined, juxtacortical lytic lesion.
-    - Expansile lesion with a central sclerotic core in the femur.
-    - Solitary, juxtacortical lytic area with surrounding sclerosis.
-    - Broad-based pedicle with sclerotic margin at the tibia.
-    - Giant, lobulated mass with peripheral calcification.
+    descriptions: []
     metadata:
       num_attributes: 6
-      num_descriptions: 8
+      num_descriptions: 0
   osteofibroma:
     default_prompt: a radiograph of osteofibroma
     attributes:
@@ -83,17 +69,16 @@ classes:
     - Short pedunculated stalk
     - Cortical expansion
     descriptions:
-    - Expansile lytic lesion in proximal tibia, cortical thinning.
-    - Central sclerotic mass in distal radius, well-defined.
-    - Sclerotic nodule at metaphyseal level, no periosteal reaction.
-    - Ovoid sclerotic lesion in scapula, sharp margins.
-    - Ground-glass dense focus in calcaneus, short stalk.
-    - Cortical-based mass in femoral neck, homogeneous density.
-    - Single sclerotic nodule in humeral diaphysis, smooth contour.
-    - Medullary cavity involvement with sclerotic center in ulna.
+    - Cortically-based expansile lesion in ulna with smooth margins.
+    - Central sclerotic mass in distal radius with well-defined borders.
+    - Sclerotic nodule at metaphyseal level of femur, no periosteal reaction.
+    - Expansile lytic lesion in proximal tibia with intact cortex.
+    - Cortical thickening with sclerotic center in humeral diaphysis.
+    - Single sclerotic nodule in metacarpal head, no surrounding soft tissue.
+    - Ovoid sclerotic mass in scaphoid with short pedunculated base.
     metadata:
       num_attributes: 6
-      num_descriptions: 8
+      num_descriptions: 7
   osteosarcoma:
     default_prompt: a radiograph of osteosarcoma
     attributes:
@@ -104,21 +89,13 @@ classes:
     - Soft tissue mass extension
     - Rapid bone expansion
     descriptions:
-    - Central lytic lesion with sunburst periosteal reaction in the distal femur.
-    - Expansile mixed lytic-sclerotic lesion at the metaphyseal-diaphyseal junction
-      of the tibia.
-    - Irregular cortical destruction with soft tissue mass extending into the adjacent
-      muscle belly.
-    - Cortical breach with ground-glass matrix appearance in a central diaphyseal
-      lesion.
-    - Periosteal reaction forming a distinct sunburst pattern surrounding a sclerotic
-      core.
-    - Codman triangle present in a rapidly expanding lesion of the proximal humerus.
-    - Multiple discrete sclerotic foci within a predominantly lytic area in the calcaneus.
-    - Rapid bone expansion with loss of normal trabecular architecture in the pelvis.
+    - Rapid bone expansion with soft tissue mass extending into knee joint.
+    - Multiple discrete foci of lytic lesions in vertebral body.
+    - Cortical destruction with sunburst periosteal reaction around diaphysis.
+    - Osteolytic lesion with central sclerosis and surrounding reactive骨骺端溶骨性病变，中央伴有硬化灶和周围反应性新骨形成。
     metadata:
       num_attributes: 6
-      num_descriptions: 8
+      num_descriptions: 4
   simple bone cyst:
     default_prompt: a radiograph of simple bone cyst
     attributes:
@@ -129,14 +106,14 @@ classes:
     - centrally located in diaphysis
     - well-defined margins
     descriptions:
-    - Central diaphyseal lytic lesion with fluid level.
-    - Diaphyseal lesion has intact cortex; no breach.
-    - Well-defined, round diaphyseal cyst with lucency.
-    - Medullary cavity shows expansile lytic lesion only.
-    - Unicavitary defect in metaphysis lacks sclerotic rim.
-    - Cystic area demonstrates ground-glass density.
-    - Clear margins with no periosteal reaction present.
-    - Unicameral cyst presents as a unilocular lucent area.
+    - Central lytic lesion in femoral shaft, clearly demarcated.
+    - Diaphyseal lytic region in radius, no periosteal reaction.
+    - Well-defined, solitary lytic spot in tibia without sclerosis.
+    - Single, sharply defined lytic zone in ulna, central position.
+    - Medullary cavity lytic lesion in fibula, smooth borders.
+    - Simple lytic defect in distal femur, lacks sclerotic rim.
+    - Unilocular lytic area in humeral diaphysis, uniform density.
+    - Centrally located lytic spot in proximal phalanx of finger.
     metadata:
       num_attributes: 6
       num_descriptions: 8
@@ -150,14 +127,14 @@ classes:
     - cortical indentation sign
     - eccentric lesion shape
     descriptions:
-    - Central lytic lesion with spiculated margin in the femoral head.
-    - Ground-glass density within a well-defined cortically based lesion.
-    - Expansile lytic lesion with cortical indentation in the proximal humerus.
-    - Periosteal reaction present around a centrally located lytic lesion.
-    - Multiple discrete foci of ground-glass density in the metaphysis.
-    - Eccentrically placed sclerotic mass at the distal tibia.
-    - Single, large, expansile lesion with eccentric positioning in the pelvis.
-    - Large, soft tissue mass extending beyond the cortical boundary.
+    - Calcified nodule with sclerotic rim in distal radius.
+    - Soft tissue mass at knee with ground-glass matrix.
+    - Lytic lesion in scapula with surrounding ground-glass density.
+    - Well-defined lytic lesion with central calcification in femur shaft.
+    - Cortical scalloping adjacent to expansile lytic lesion in tibia.
+    - Irregularly shaped soft-tissue mass with internal calcifications near ankle.
+    - Central calcification within a multilocular lytic lesion of humerus.
+    - Eccentric lytic area with sclerotic margin in proximal fibula.
     metadata:
       num_attributes: 6
       num_descriptions: 8

@@ -122,8 +122,8 @@ class OutputCleaner:
         self,
         min_length: int = 25,
         max_length: int = 200,
-        min_words: int = 8,
-        max_words: int = 15,
+        min_words: int = 5,
+        max_words: int = 22,
         near_dup_threshold: float = 0.80,
         require_domain_keyword: bool = True,
         min_domain_keywords: int = 2,
@@ -302,6 +302,8 @@ class OutputCleaner:
         # Length check
         if len(line) < self.min_length or len(line) > self.max_length:
             return False
+        if self._has_non_english_fragment(line):
+            return False
         words = len(line.split())
         if words < self.min_words or words > self.max_words:
             return False
@@ -346,6 +348,8 @@ class OutputCleaner:
 
         if len(line) < self.min_length or len(line) > self.max_length:
             return False, "char_length"
+        if self._has_non_english_fragment(line):
+            return False, "non_english_or_mixed_language"
         words = len(line.split())
         if words < self.min_words or words > self.max_words:
             return False, "word_length"
@@ -368,6 +372,14 @@ class OutputCleaner:
         """Count how many radiographic keywords appear in the line."""
         lower = line.lower()
         return sum(1 for kw in RADIOGRAPHIC_KEYWORDS if kw in lower)
+
+    @staticmethod
+    def _has_non_english_fragment(line: str) -> bool:
+        for ch in line:
+            cp = ord(ch)
+            if 0x4E00 <= cp <= 0x9FFF:
+                return True
+        return False
 
     def _is_near_duplicate(self, candidate: str, existing: List[str]) -> bool:
         """Check if candidate is too similar to any existing line."""

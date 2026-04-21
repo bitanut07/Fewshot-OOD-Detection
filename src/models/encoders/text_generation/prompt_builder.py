@@ -197,11 +197,18 @@ Already accepted descriptions (DO NOT repeat or paraphrase these):
 
 Other known classes: {other_classes}
 
+Preferred class-specific visual features:
+{preferred_features}
+
+Features to avoid (mismatched or unlikely for this class):
+{avoid_features}
+
 Requirements:
 - Generate exactly {num_needed} NEW descriptions, one per line
 - Each must be visually DISTINCT from the accepted ones above
 - Focus on different radiographic features not yet covered
-- Each description: ONE sentence, 10-25 words, plain X-ray features only
+- Each description: ONE sentence, concise (about 6-22 words), plain X-ray features only
+- Output must be English-only text
 
 FORBIDDEN: "This X-ray shows", "may", "might", "possibly", symptoms, history
 
@@ -309,6 +316,8 @@ Output: {num_needed} new descriptions only, one per line, no numbering"""
         num_needed: int,
         existing_descriptions: List[str],
         other_classes: Optional[List[str]] = None,
+        preferred_features: Optional[List[str]] = None,
+        avoid_features: Optional[List[str]] = None,
     ) -> str:
         """Build targeted retry prompt for generating additional descriptions."""
         other_list = ", ".join(c for c in (other_classes or []) if c != class_name)
@@ -316,10 +325,14 @@ Output: {num_needed} new descriptions only, one per line, no numbering"""
             other_list = "other bone tumors"
 
         existing_block = "\n".join(f"- {d}" for d in existing_descriptions)
+        preferred_block = "\n".join(f"- {d}" for d in (preferred_features or [])) or "- class-specific radiographic morphology"
+        avoid_block = "\n".join(f"- {d}" for d in (avoid_features or [])) or "- non-specific generic findings"
 
         return self._retry_tpl.format(
             class_name=class_name,
             num_needed=num_needed,
             existing_descriptions=existing_block,
             other_classes=other_list,
+            preferred_features=preferred_block,
+            avoid_features=avoid_block,
         )
