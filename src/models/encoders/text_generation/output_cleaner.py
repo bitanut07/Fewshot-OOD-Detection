@@ -123,7 +123,7 @@ class OutputCleaner:
         min_length: int = 25,
         max_length: int = 200,
         min_words: int = 5,
-        max_words: int = 22,
+        max_words: int = 30,
         near_dup_threshold: float = 0.80,
         require_domain_keyword: bool = True,
         min_domain_keywords: int = 2,
