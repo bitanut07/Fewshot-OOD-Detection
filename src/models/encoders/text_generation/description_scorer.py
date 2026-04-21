@@ -10,7 +10,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from difflib import SequenceMatcher
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Vocabulary sets for scoring
@@ -267,3 +267,55 @@ class DescriptionScorer:
             result[target_class] = kept
 
         return result
+
+    def select_diverse_topk(
+        self,
+        descriptions: List[str],
+        class_name: Optional[str] = None,
+        k: int = 8,
+        min_score: float = 0.0,
+    ) -> List[str]:
+        """Select top-k descriptions while maximizing feature-category diversity."""
+        scored = [s for s in self.score_batch(descriptions, class_name) if s.total_score >= min_score and not s.has_forbidden]
+        if not scored:
+            return []
+
+        selected: List[str] = []
+        used_categories: Set[str] = set()
+
+        for item in scored:
+            cat = self._feature_category(item.text)
+            if cat not in used_categories:
+                selected.append(item.text)
+                used_categories.add(cat)
+            if len(selected) >= k:
+                return selected
+
+        for item in scored:
+            if item.text not in selected:
+                selected.append(item.text)
+            if len(selected) >= k:
+                break
+        return selected
+
+    @staticmethod
+    def _feature_category(text: str) -> str:
+        """Map description to a coarse visual feature category."""
+        t = text.lower()
+        if any(x in t for x in ["cortex", "cortical", "breach", "thinning", "destruction"]):
+            return "cortical"
+        if any(x in t for x in ["trabec", "cancellous"]):
+            return "trabecular"
+        if any(x in t for x in ["periosteal", "sunburst", "codman", "lamellated", "spiculated"]):
+            return "periosteal"
+        if any(x in t for x in ["lytic", "sclerotic", "permeative", "moth-eaten", "geographic", "mixed"]):
+            return "lesion_pattern"
+        if any(x in t for x in ["matrix", "osteoid", "chondroid", "ground-glass", "ring-arc", "calcif"]):
+            return "matrix"
+        if any(x in t for x in ["epiph", "metaph", "diaph", "subarticular", "intramedullary"]):
+            return "location"
+        if any(x in t for x in ["expansile", "expansion", "eccentric", "unilocular", "multiloculated", "shape", "lobulated"]):
+            return "shape_growth"
+        if any(x in t for x in ["soft tissue", "extra-osseous", "extraosseous"]):
+            return "soft_tissue"
+        return "other"

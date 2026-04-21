@@ -112,9 +112,8 @@ ssh -i ~/.ssh/id_ed25519 -p 33528 root@116.109.174.203
 
 scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/data/prompts/class_descriptions.json .
 
+cd Fewshot-OOD-Detection
+
 Lệnh generate descriptions:
-python src/scripts/generate_llm_descriptions.py \
-    --config configs/experiment/exp_full_model.yaml \
-    --num_attributes 6 \    # Stage A: how many attributes
-    --num_descriptions 8 \  # Stage B: how many descriptions
-    --force
+
+python src/scripts/generate_llm_descriptions.py --config configs/experiment/exp_full_model.yaml --num_attributes 6 --num_descriptions 8 --force

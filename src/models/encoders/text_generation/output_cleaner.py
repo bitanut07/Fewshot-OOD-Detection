@@ -122,6 +122,8 @@ class OutputCleaner:
         self,
         min_length: int = 25,
         max_length: int = 200,
+        min_words: int = 8,
+        max_words: int = 15,
         near_dup_threshold: float = 0.80,
         require_domain_keyword: bool = True,
         min_domain_keywords: int = 2,
@@ -130,6 +132,8 @@ class OutputCleaner:
     ) -> None:
         self.min_length = min_length
         self.max_length = max_length
+        self.min_words = min_words
+        self.max_words = max_words
         self.near_dup_threshold = near_dup_threshold
         self.require_domain_keyword = require_domain_keyword
         self.min_domain_keywords = min_domain_keywords
@@ -246,6 +250,9 @@ class OutputCleaner:
         """Return True only if line passes all quality filters."""
         # Length check
         if len(line) < self.min_length or len(line) > self.max_length:
+            return False
+        words = len(line.split())
+        if words < self.min_words or words > self.max_words:
             return False
 
         # Forbidden pattern starts

@@ -240,8 +240,8 @@ class CacheManager:
         self._save_yaml(self.descriptions_path, payload)
         log.info("Descriptions saved → %s", self.descriptions_path)
 
-    def save_flat_json(self, flat: Dict[str, List[str]]) -> None:
-        """Save flat {class: [desc, …]} JSON for compatibility."""
+    def save_flat_json(self, flat: Dict[str, Any]) -> None:
+        """Save class-centric JSON payload for downstream usage."""
         if self.json_path is None:
             return
         self._ensure_dir(self.json_path)

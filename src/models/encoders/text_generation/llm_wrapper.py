@@ -236,8 +236,8 @@ class LLMWrapper:
             new = self.cleaner.clean(raw, existing=all_lines)
 
             # Score and filter
-            scored_new = self.scorer.filter_and_rank(
-                new, class_name=class_name, min_score=0.0,
+            scored_new = self.scorer.select_diverse_topk(
+                new, class_name=class_name, k=max(remaining + 2, 4), min_score=0.0
             )
 
             for desc in scored_new:
@@ -299,7 +299,9 @@ class LLMWrapper:
             raw = self.generator.generate(prompt, config=cfg)
             new = self.cleaner.clean(raw, existing=result)
 
-            scored = self.scorer.filter_and_rank(new, class_name=class_name, min_score=0.0)
+            scored = self.scorer.select_diverse_topk(
+                new, class_name=class_name, k=max(remaining + 2, 4), min_score=0.0
+            )
 
             for desc in scored:
                 if desc not in result:
@@ -398,6 +400,18 @@ class LLMWrapper:
             classes_data[cls_name]["descriptions"] = descs
             classes_data[cls_name]["metadata"]["num_descriptions"] = len(descs)
 
+            if len(descs) < num_descriptions:
+                need = num_descriptions - len(descs)
+                log.info("  '%s': regenerating %d missing descriptions after cross-class pruning", cls_name, need)
+                topup = self._targeted_retry(
+                    class_name=cls_name,
+                    existing=descs,
+                    num_needed=need,
+                    other_classes=[c for c in class_names if c != cls_name],
+                )
+                classes_data[cls_name]["descriptions"] = topup[:num_descriptions]
+                classes_data[cls_name]["metadata"]["num_descriptions"] = len(classes_data[cls_name]["descriptions"])
+
         # Step 4: Build and save payload
         payload = build_output_payload(
             dataset_name=dataset_name,
@@ -412,8 +426,15 @@ class LLMWrapper:
         self.cache.save_descriptions(payload)
 
         # Save flat JSON for compatibility
-        flat = {cls: data["descriptions"] for cls, data in classes_data.items()}
-        self.cache.save_flat_json(flat)
+        class_centric = {
+            cls: {
+                "default_prompt": data["default_prompt"],
+                "attributes": data["attributes"],
+                "descriptions": data["descriptions"],
+            }
+            for cls, data in classes_data.items()
+        }
+        self.cache.save_flat_json(class_centric)
 
         log.info("Generation complete!")
         return payload

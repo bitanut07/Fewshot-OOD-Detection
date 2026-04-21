@@ -238,8 +238,15 @@ def main():
             classes=classes_data,
         )
         cache.save_descriptions(payload)
-        flat = {cls: data["descriptions"] for cls, data in classes_data.items()}
-        cache.save_flat_json(flat)
+        class_centric = {
+            cls: {
+                "default_prompt": data["default_prompt"],
+                "attributes": data["attributes"],
+                "descriptions": data["descriptions"],
+            }
+            for cls, data in classes_data.items()
+        }
+        cache.save_flat_json(class_centric)
 
     else:
         # Full pipeline
