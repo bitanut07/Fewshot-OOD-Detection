@@ -2,7 +2,7 @@
 includes: ["model/clip_vit_b16.yaml", "model/llm_qwen.yaml", "model/text_refiner.yaml", "model/local_contrastive.yaml", "model/alignment.yaml", "data/bone_xray.yaml", "train/fewshot_1shot.yaml"]
 experiment_name: "full_model"
 llm_descriptions:
-  num_descriptions_per_class: 5
+  num_descriptions_per_class: 8
   use_template_prompt: true
 model:
   text_refiner:

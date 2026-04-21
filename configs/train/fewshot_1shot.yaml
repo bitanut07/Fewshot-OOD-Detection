@@ -1,7 +1,7 @@
-# Few-shot 1-shot config
+# Few-shot 1-shot config — reduced epochs for k=1 overfitting prevention
 experiment_name: "fsl_1shot"
 fewshot:
-  n_way: 5
+  n_way: 6
   k_shot: 1
   n_query: 15
   episodes_per_epoch: 200
@@ -9,7 +9,7 @@ fewshot:
   num_episodes_val: 50
   num_episodes_test: 100
 train:
-  epochs: 150
+  epochs: 40
   batch_size: 4
   optimizer:
     type: "AdamW"
@@ -17,9 +17,10 @@ train:
     weight_decay: 0.01
   scheduler:
     type: "CosineAnnealingLR"
-    T_max: 150
+    T_max: 40
     eta_min: 0.000001
-  warmup_epochs: 10
+  warmup_epochs: 5
+  mixed_precision: true
 loss:
   local_contrastive:
     weight: 0.8

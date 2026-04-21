@@ -1,0 +1,128 @@
+{
+  "giant cell tumor": {
+    "default_prompt": "a radiograph of giant cell tumor",
+    "attributes": [
+      "centrally located lytic lesion",
+      "irregular sclerosing margins",
+      "prominent soft tissue mass",
+      "sunburst periosteal reaction",
+      "cortical thinning and bulging",
+      "multilocular lucency with septa"
+    ],
+    "descriptions": [
+      "Expansile growth pattern with cortical breach in scapula.",
+      "Centrally located lytic lesion in distal femur.",
+      "Sunburst periosteal reaction around lytic lesion in radius.",
+      "Prominent soft tissue mass extending beyond diaphysis in humerus.",
+      "Irregular sclerotic margins surrounding lytic area in tibia.",
+      "Cortical thinning and bulging noted in proximal fibula.",
+      "Predominant lytic change with minimal sclerosis in ulna.",
+      "Eccentric lytic lesion at the metaphyseal region of the fibula."
+    ]
+  },
+  "osteochondroma": {
+    "default_prompt": "a radiograph of osteochondroma",
+    "attributes": [
+      "chondroid cap protrusion",
+      "pedunculated base",
+      "sclerosis peripheral",
+      "unicentric solitary growth",
+      "juxtacortical location",
+      "broad based pedicle"
+    ],
+    "descriptions": [
+      "Eccentric, pedunculated mass with ground-glass matrix.",
+      "Central, expansile lytic lesion with intact cortex.",
+      "Expansile lesion with a central sclerotic core in the femur.",
+      "Pedunculated mass at the metaphysis with a chondroid cap.",
+      "Unicentric, well-defined, juxtacortical lytic lesion.",
+      "Solitary, juxtacortical lytic area with surrounding sclerosis.",
+      "Broad-based pedicle with sclerotic margin at the tibia.",
+      "Cortical continuity preserved with a small, rounded exostosis."
+    ]
+  },
+  "osteofibroma": {
+    "default_prompt": "a radiograph of osteofibroma",
+    "attributes": [
+      "Sclerotic central mass",
+      "Well-defined margins",
+      "No periosteal reaction",
+      "Homogeneous density",
+      "Short pedunculated stalk",
+      "Cortical expansion"
+    ],
+    "descriptions": [
+      "Expansile lytic lesion in proximal tibia, cortical thinning.",
+      "Central sclerotic mass in distal radius, well-defined.",
+      "Sclerotic nodule at metaphyseal level, no periosteal reaction.",
+      "Ground-glass dense focus in calcaneus, short stalk.",
+      "Cortical-based mass in femoral neck, homogeneous density.",
+      "Ovoid sclerotic lesion in scapula, sharp margins.",
+      "Single sclerotic nodule in humeral diaphysis, smooth contour.",
+      "Medullary cavity involvement with sclerotic center in ulna."
+    ]
+  },
+  "osteosarcoma": {
+    "default_prompt": "a radiograph of osteosarcoma",
+    "attributes": [
+      "Codman triangle presence",
+      "Sunburst periosteal reaction",
+      "Mixed lytic-sclerotic lesion",
+      "Irregular cortical destruction",
+      "Soft tissue mass extension",
+      "Rapid bone expansion"
+    ],
+    "descriptions": [
+      "Central lytic lesion with sunburst periosteal reaction in the distal femur.",
+      "Irregular cortical destruction with soft tissue mass extending into the adjacent muscle belly.",
+      "Expansile mixed lytic-sclerotic lesion at the metaphyseal-diaphyseal junction of the tibia.",
+      "Rapid bone expansion with loss of normal trabecular architecture in the pelvis.",
+      "Periosteal reaction forming a distinct sunburst pattern surrounding a sclerotic core.",
+      "Cortical breach with ground-glass matrix appearance in a central diaphyseal lesion.",
+      "Codman triangle present in a rapidly expanding lesion of the proximal humerus.",
+      "Multiple discrete sclerotic foci within a predominantly lytic area in the calcaneus."
+    ]
+  },
+  "simple bone cyst": {
+    "default_prompt": "a radiograph of simple bone cyst",
+    "attributes": [
+      "cavitation with fluid level",
+      "lack of sclerotic border",
+      "unilocular lytic lesion",
+      "no periosteal reaction",
+      "centrally located in diaphysis",
+      "well-defined margins"
+    ],
+    "descriptions": [
+      "Central diaphyseal lytic lesion with fluid level.",
+      "Well-defined, round diaphyseal cyst with lucency.",
+      "Diaphyseal lesion has intact cortex; no breach.",
+      "Cystic area demonstrates ground-glass density.",
+      "Clear margins with no periosteal reaction present.",
+      "Medullary cavity shows expansile lytic lesion only.",
+      "Unicavitary defect in metaphysis lacks sclerotic rim.",
+      "Diaphyseal region exhibits unilocular lytic lesion without sclerosis."
+    ]
+  },
+  "synovial osteochondroma": {
+    "default_prompt": "a radiograph of synovial osteochondroma",
+    "attributes": [
+      "soft tissue mass base",
+      "central lesion position",
+      "ground glass matrix texture",
+      "spiculated margin appearance",
+      "cortical indentation sign",
+      "eccentric lesion shape"
+    ],
+    "descriptions": [
+      "Central lytic lesion with spiculated margin in the femoral head.",
+      "Expansile lytic lesion with cortical indentation in the proximal humerus.",
+      "Eccentrically placed sclerotic mass at the distal tibia.",
+      "Single, large, expansile lesion with eccentric positioning in the pelvis.",
+      "Multiple discrete foci of ground-glass density in the metaphysis.",
+      "Periosteal reaction present around a centrally located lytic lesion.",
+      "Large, soft tissue mass extending beyond the cortical boundary.",
+      "Ground-glass density within a well-defined cortically based lesion."
+    ]
+  }
+}

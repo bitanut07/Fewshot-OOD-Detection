@@ -1,4 +1,5 @@
 # Evaluation: Few-shot OOD Detection
+# Percentile-based threshold adapts to score distribution per run
 eval:
   mode: "ood"
   test_on_ood: true
@@ -10,12 +11,11 @@ eval:
     - "fpr95"
   ood:
     method: "msp"
-    threshold_strategy: "fixed"
-    fixed_threshold: 0.0
+    threshold_strategy: "percentile"
     percentile: 95
   episodes:
     num_episodes: 100
-    n_way: 5
+    n_way: 6
     k_shot: 1
     n_query: 15
     ood_ratio: 0.2

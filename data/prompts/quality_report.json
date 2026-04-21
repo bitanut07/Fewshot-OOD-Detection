@@ -1,0 +1,4433 @@
+{
+  "generated_at": "2026-04-21T09:43:18.430966+00:00",
+  "model_name": "Qwen/Qwen2.5-7B-Instruct",
+  "seed": 42,
+  "generation_config": {
+    "max_new_tokens": 512,
+    "temperature": 0.3,
+    "top_p": 0.85,
+    "repetition_penalty": 1.15,
+    "seed": 42,
+    "deterministic": false
+  },
+  "classes": {
+    "giant cell tumor": {
+      "attributes_candidates": [
+        {
+          "text": "centrally located lytic lesion",
+          "normalized": "centrally located lytic lesion",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "irregular sclerosing margins",
+          "normalized": "irregular sclerosing margins",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "prominent soft tissue mass",
+          "normalized": "prominent soft tissue mass",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "sunburst periosteal reaction",
+          "normalized": "sunburst periosteal reaction",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "cortical thinning and bulging",
+          "normalized": "cortical thinning and bulging",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "multilocular lucency with septa",
+          "normalized": "multilocular lucency with septa",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        }
+      ],
+      "description_candidates": [
+        {
+          "text": "- Centrally located lytic lesion in distal femur.",
+          "normalized": "Centrally located lytic lesion in distal femur.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Irregular sclerotic margins surrounding lytic area in tibia.",
+          "normalized": "Irregular sclerotic margins surrounding lytic area in tibia.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Prominent soft tissue mass extending beyond cortical boundary.",
+          "normalized": "Prominent soft tissue mass extending beyond cortical boundary.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sunburst periosteal reaction encircling lytic region.",
+          "normalized": "Sunburst periosteal reaction encircling lytic region.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Multilocular lucency with septae in proximal humerus.",
+          "normalized": "Multilocular lucency with septae in proximal humerus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical thinning and bulging noted at site of lytic lesion.",
+          "normalized": "Cortical thinning and bulging noted at site of lytic lesion.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile growth pattern with partial breach of cortical shell.",
+          "normalized": "Expansile growth pattern with partial breach of cortical shell.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Predominantly lytic appearance with minimal sclerotic change.",
+          "normalized": "Predominantly lytic appearance with minimal sclerotic change.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Centrally located lytic lesion in distal femur.",
+          "normalized": "Centrally located lytic lesion in distal femur.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Irregular sclerotic margins surrounding lytic area in tibia.",
+          "normalized": "Irregular sclerotic margins surrounding lytic area in tibia.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Prominent soft tissue mass extending beyond cortical boundary.",
+          "normalized": "Prominent soft tissue mass extending beyond cortical boundary.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sunburst periosteal reaction encircling lytic region.",
+          "normalized": "Sunburst periosteal reaction encircling lytic region.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Multilocular lucency with septae in proximal humerus.",
+          "normalized": "Multilocular lucency with septae in proximal humerus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical thinning and bulging noted at site of lytic lesion.",
+          "normalized": "Cortical thinning and bulging noted at site of lytic lesion.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile growth pattern with partial breach of cortical shell.",
+          "normalized": "Expansile growth pattern with partial breach of cortical shell.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Predominantly lytic appearance with minimal sclerotic change.",
+          "normalized": "Predominantly lytic appearance with minimal sclerotic change.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Centrally located lytic lesion in distal femur.",
+          "normalized": "Centrally located lytic lesion in distal femur.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Irregular sclerotic margins surrounding lytic area in tibia.",
+          "normalized": "Irregular sclerotic margins surrounding lytic area in tibia.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Prominent soft tissue mass extending beyond cortical boundary.",
+          "normalized": "Prominent soft tissue mass extending beyond cortical boundary.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sunburst periosteal reaction encircling lytic region.",
+          "normalized": "Sunburst periosteal reaction encircling lytic region.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Multilocular lucency with septae in proximal humerus.",
+          "normalized": "Multilocular lucency with septae in proximal humerus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical thinning and bulging noted at site of lytic lesion.",
+          "normalized": "Cortical thinning and bulging noted at site of lytic lesion.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile growth pattern with partial breach of cortical shell.",
+          "normalized": "Expansile growth pattern with partial breach of cortical shell.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Predominantly lytic appearance with minimal sclerotic change.",
+          "normalized": "Predominantly lytic appearance with minimal sclerotic change.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "Giant cell tumor exhibits central lucency within diaphysis.",
+          "normalized": "Giant cell tumor exhibits central lucency within diaphysis.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Lytic lesion with punctate calcifications in metaphyseal region.",
+          "normalized": "Lytic lesion with punctate calcifications in metaphyseal region.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Irregular erosive changes with scalloped margin along cortex.",
+          "normalized": "Irregular erosive changes with scalloped margin along cortex.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Well-defined lytic lesion with ground-glass appearance.",
+          "normalized": "Well-defined lytic lesion with ground-glass appearance.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Cortical disruption with adjacent reactive sclerosis.",
+          "normalized": "Cortical disruption with adjacent reactive sclerosis.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Multilocular lytic lesion with thin septations.",
+          "normalized": "Multilocular lytic lesion with thin septations.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Giant cell tumor exhibits central lucency within diaphysis.",
+          "normalized": "Giant cell tumor exhibits central lucency within diaphysis.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Lytic lesion with punctate calcifications in metaphyseal region.",
+          "normalized": "Lytic lesion with punctate calcifications in metaphyseal region.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Irregular erosive changes with scalloped margin along cortex.",
+          "normalized": "Irregular erosive changes with scalloped margin along cortex.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Well-defined lytic lesion with ground-glass appearance.",
+          "normalized": "Well-defined lytic lesion with ground-glass appearance.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Cortical disruption with adjacent reactive sclerosis.",
+          "normalized": "Cortical disruption with adjacent reactive sclerosis.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Multilocular lytic lesion with thin septations.",
+          "normalized": "Multilocular lytic lesion with thin septations.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Central expansile lesion with septations in distal femur.",
+          "normalized": "Central expansile lesion with septations in distal femur.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 12.0,
+            "radiographic_count": 4,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Multilocular cystic appearance with eccentric location.",
+          "normalized": "Multilocular cystic appearance with eccentric location.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Well-defined cortically based lesion with mild sclerosis.",
+          "normalized": "Well-defined cortically based lesion with mild sclerosis.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Peripheral bony outgrowths around the main lesion.",
+          "normalized": "Peripheral bony outgrowths around the main lesion.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Central expansile lesion with septations in distal femur.",
+          "normalized": "Central expansile lesion with septations in distal femur.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 12.0,
+            "radiographic_count": 4,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Multilocular cystic appearance with eccentric location.",
+          "normalized": "Multilocular cystic appearance with eccentric location.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Well-defined cortically based lesion with mild sclerosis.",
+          "normalized": "Well-defined cortically based lesion with mild sclerosis.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Peripheral bony outgrowths around the main lesion.",
+          "normalized": "Peripheral bony outgrowths around the main lesion.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        }
+      ]
+    },
+    "osteochondroma": {
+      "attributes_candidates": [
+        {
+          "text": "chondroid cap protrusion",
+          "normalized": "chondroid cap protrusion",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "pedunculated base",
+          "normalized": "pedunculated base",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "sclerosis peripheral",
+          "normalized": "sclerosis peripheral",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "unicentric solitary growth",
+          "normalized": "unicentric solitary growth",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "juxtacortical location",
+          "normalized": "juxtacortical location",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "broad based pedicle",
+          "normalized": "broad based pedicle",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        }
+      ],
+      "description_candidates": [
+        {
+          "text": "- Unicentric, juxtacortical mass with broad-based pedicle.",
+          "normalized": "Unicentric, juxtacortical mass with broad-based pedicle.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Pedunculated base with chondroid cap protruding externally.",
+          "normalized": "Pedunculated base with chondroid cap protruding externally.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Clear sclerotic border surrounding well-defined mass.",
+          "normalized": "Clear sclerotic border surrounding well-defined mass.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile growth confined within medullary space.",
+          "normalized": "Expansile growth confined within medullary space.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Single lesion with unifocal presentation.",
+          "normalized": "Single lesion with unifocal presentation.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Predominantly sclerotic changes with lytic areas.",
+          "normalized": "Predominantly sclerotic changes with lytic areas.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical integrity intact; no breach or thinning.",
+          "normalized": "Cortical integrity intact; no breach or thinning.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Peripheral sclerosis marks distinct margin boundary.",
+          "normalized": "Peripheral sclerosis marks distinct margin boundary.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Unicentric, juxtacortical mass with broad-based pedicle.",
+          "normalized": "Unicentric, juxtacortical mass with broad-based pedicle.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Pedunculated base with chondroid cap protruding externally.",
+          "normalized": "Pedunculated base with chondroid cap protruding externally.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Clear sclerotic border surrounding well-defined mass.",
+          "normalized": "Clear sclerotic border surrounding well-defined mass.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile growth confined within medullary space.",
+          "normalized": "Expansile growth confined within medullary space.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Single lesion with unifocal presentation.",
+          "normalized": "Single lesion with unifocal presentation.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Predominantly sclerotic changes with lytic areas.",
+          "normalized": "Predominantly sclerotic changes with lytic areas.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical integrity intact; no breach or thinning.",
+          "normalized": "Cortical integrity intact; no breach or thinning.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Peripheral sclerosis marks distinct margin boundary.",
+          "normalized": "Peripheral sclerosis marks distinct margin boundary.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Unicentric, juxtacortical mass with broad-based pedicle.",
+          "normalized": "Unicentric, juxtacortical mass with broad-based pedicle.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Pedunculated base with chondroid cap protruding externally.",
+          "normalized": "Pedunculated base with chondroid cap protruding externally.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Clear sclerotic border surrounding well-defined mass.",
+          "normalized": "Clear sclerotic border surrounding well-defined mass.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile growth confined within medullary space.",
+          "normalized": "Expansile growth confined within medullary space.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Single lesion with unifocal presentation.",
+          "normalized": "Single lesion with unifocal presentation.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Predominantly sclerotic changes with lytic areas.",
+          "normalized": "Predominantly sclerotic changes with lytic areas.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical integrity intact; no breach or thinning.",
+          "normalized": "Cortical integrity intact; no breach or thinning.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Peripheral sclerosis marks distinct margin boundary.",
+          "normalized": "Peripheral sclerosis marks distinct margin boundary.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "soft tissue mass adjacent to metaphysis",
+          "normalized": "soft tissue mass adjacent to metaphysis",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.975,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 0.975,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "ossified cartilage cap with peripheral calcification",
+          "normalized": "ossified cartilage cap with peripheral calcification",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "unicameral lesion projecting outwardly",
+          "normalized": "unicameral lesion projecting outwardly",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 2.95,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 0.95,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "well-defined exostosis with smooth surface",
+          "normalized": "well-defined exostosis with smooth surface",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "pedunculated bony projection extending outward",
+          "normalized": "pedunculated bony projection extending outward",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "cortical indentation without periosteal reaction",
+          "normalized": "cortical indentation without periosteal reaction",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "central osseous core with surrounding cartilage",
+          "normalized": "central osseous core with surrounding cartilage",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "eccentric lytic lesion at metaphyseal region",
+          "normalized": "eccentric lytic lesion at metaphyseal region",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 12.0,
+            "radiographic_count": 4,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "rounded mass with sclerotic margin",
+          "normalized": "rounded mass with sclerotic margin",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.85,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 0.85,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "biphasic structure of cartilage and bone",
+          "normalized": "biphasic structure of cartilage and bone",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "soft tissue mass adjacent to metaphysis",
+          "normalized": "soft tissue mass adjacent to metaphysis",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.975,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 0.975,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "ossified cartilage cap with peripheral calcification",
+          "normalized": "ossified cartilage cap with peripheral calcification",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "unicameral lesion projecting outwardly",
+          "normalized": "unicameral lesion projecting outwardly",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 2.95,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 0.95,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "well-defined exostosis with smooth surface",
+          "normalized": "well-defined exostosis with smooth surface",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "pedunculated bony projection extending outward",
+          "normalized": "pedunculated bony projection extending outward",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "cortical indentation without periosteal reaction",
+          "normalized": "cortical indentation without periosteal reaction",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "central osseous core with surrounding cartilage",
+          "normalized": "central osseous core with surrounding cartilage",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "eccentric lytic lesion at metaphyseal region",
+          "normalized": "eccentric lytic lesion at metaphyseal region",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 12.0,
+            "radiographic_count": 4,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "rounded mass with sclerotic margin",
+          "normalized": "rounded mass with sclerotic margin",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.85,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 0.85,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "biphasic structure of cartilage and bone",
+          "normalized": "biphasic structure of cartilage and bone",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "soft tissue mass adjacent to metaphysis",
+          "normalized": "soft tissue mass adjacent to metaphysis",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.975,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 0.975,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "ossified cartilage cap with peripheral calcification",
+          "normalized": "ossified cartilage cap with peripheral calcification",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "unicameral lesion projecting outwardly",
+          "normalized": "unicameral lesion projecting outwardly",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 2.95,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 0.95,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "well-defined exostosis with smooth surface",
+          "normalized": "well-defined exostosis with smooth surface",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "pedunculated bony projection extending outward",
+          "normalized": "pedunculated bony projection extending outward",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "cortical indentation without periosteal reaction",
+          "normalized": "cortical indentation without periosteal reaction",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "central osseous core with surrounding cartilage",
+          "normalized": "central osseous core with surrounding cartilage",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "eccentric lytic lesion at metaphyseal region",
+          "normalized": "eccentric lytic lesion at metaphyseal region",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 12.0,
+            "radiographic_count": 4,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "rounded mass with sclerotic margin",
+          "normalized": "rounded mass with sclerotic margin",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.85,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 0.85,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "biphasic structure of cartilage and bone",
+          "normalized": "biphasic structure of cartilage and bone",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "soft tissue mass adjacent to metaphysis",
+          "normalized": "soft tissue mass adjacent to metaphysis",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.975,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 0.975,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "ossified cartilage cap with peripheral calcification",
+          "normalized": "ossified cartilage cap with peripheral calcification",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "unicameral lesion projecting outwardly",
+          "normalized": "unicameral lesion projecting outwardly",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 2.95,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 0.95,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "well-defined exostosis with smooth surface",
+          "normalized": "well-defined exostosis with smooth surface",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "pedunculated bony projection extending outward",
+          "normalized": "pedunculated bony projection extending outward",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "cortical indentation without periosteal reaction",
+          "normalized": "cortical indentation without periosteal reaction",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "central osseous core with surrounding cartilage",
+          "normalized": "central osseous core with surrounding cartilage",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "eccentric lytic lesion at metaphyseal region",
+          "normalized": "eccentric lytic lesion at metaphyseal region",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 12.0,
+            "radiographic_count": 4,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "rounded mass with sclerotic margin",
+          "normalized": "rounded mass with sclerotic margin",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.85,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 0.85,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "biphasic structure of cartilage and bone",
+          "normalized": "biphasic structure of cartilage and bone",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        }
+      ]
+    },
+    "osteofibroma": {
+      "attributes_candidates": [
+        {
+          "text": "Sclerotic central mass",
+          "normalized": "Sclerotic central mass",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "Well-defined margins",
+          "normalized": "Well-defined margins",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "No periosteal reaction",
+          "normalized": "No periosteal reaction",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "Homogeneous density",
+          "normalized": "Homogeneous density",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "Short pedunculated stalk",
+          "normalized": "Short pedunculated stalk",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "Cortical expansion",
+          "normalized": "Cortical expansion",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        }
+      ],
+      "description_candidates": [
+        {
+          "text": "- Central sclerotic mass in distal radius with well-defined borders.",
+          "normalized": "Central sclerotic mass in distal radius with well-defined borders.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sclerotic nodule at metaphyseal level of femur, no periosteal reaction.",
+          "normalized": "Sclerotic nodule at metaphyseal level of femur, no periosteal reaction.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile lytic lesion in proximal tibia with intact cortex.",
+          "normalized": "Expansile lytic lesion in proximal tibia with intact cortex.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 5,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Small, round, homogeneous density focus in calcaneus.",
+          "normalized": "Small, round, homogeneous density focus in calcaneus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Ovoid sclerotic mass in scaphoid with short pedunculated base.",
+          "normalized": "Ovoid sclerotic mass in scaphoid with short pedunculated base.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortically-based expansile lesion in ulna with smooth margins.",
+          "normalized": "Cortically-based expansile lesion in ulna with smooth margins.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 12.0,
+            "radiographic_count": 4,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Single sclerotic nodule in metacarpal head, no surrounding soft tissue.",
+          "normalized": "Single sclerotic nodule in metacarpal head, no surrounding soft tissue.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical thickening with sclerotic center in humeral diaphysis.",
+          "normalized": "Cortical thickening with sclerotic center in humeral diaphysis.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Central sclerotic mass in distal radius with well-defined borders.",
+          "normalized": "Central sclerotic mass in distal radius with well-defined borders.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sclerotic nodule at metaphyseal level of femur, no periosteal reaction.",
+          "normalized": "Sclerotic nodule at metaphyseal level of femur, no periosteal reaction.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile lytic lesion in proximal tibia with intact cortex.",
+          "normalized": "Expansile lytic lesion in proximal tibia with intact cortex.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 5,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Small, round, homogeneous density focus in calcaneus.",
+          "normalized": "Small, round, homogeneous density focus in calcaneus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Ovoid sclerotic mass in scaphoid with short pedunculated base.",
+          "normalized": "Ovoid sclerotic mass in scaphoid with short pedunculated base.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortically-based expansile lesion in ulna with smooth margins.",
+          "normalized": "Cortically-based expansile lesion in ulna with smooth margins.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 12.0,
+            "radiographic_count": 4,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Single sclerotic nodule in metacarpal head, no surrounding soft tissue.",
+          "normalized": "Single sclerotic nodule in metacarpal head, no surrounding soft tissue.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical thickening with sclerotic center in humeral diaphysis.",
+          "normalized": "Cortical thickening with sclerotic center in humeral diaphysis.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Central sclerotic mass in distal radius with well-defined borders.",
+          "normalized": "Central sclerotic mass in distal radius with well-defined borders.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sclerotic nodule at metaphyseal level of femur, no periosteal reaction.",
+          "normalized": "Sclerotic nodule at metaphyseal level of femur, no periosteal reaction.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile lytic lesion in proximal tibia with intact cortex.",
+          "normalized": "Expansile lytic lesion in proximal tibia with intact cortex.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 5,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Small, round, homogeneous density focus in calcaneus.",
+          "normalized": "Small, round, homogeneous density focus in calcaneus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Ovoid sclerotic mass in scaphoid with short pedunculated base.",
+          "normalized": "Ovoid sclerotic mass in scaphoid with short pedunculated base.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortically-based expansile lesion in ulna with smooth margins.",
+          "normalized": "Cortically-based expansile lesion in ulna with smooth margins.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 12.0,
+            "radiographic_count": 4,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Single sclerotic nodule in metacarpal head, no surrounding soft tissue.",
+          "normalized": "Single sclerotic nodule in metacarpal head, no surrounding soft tissue.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical thickening with sclerotic center in humeral diaphysis.",
+          "normalized": "Cortical thickening with sclerotic center in humeral diaphysis.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "Cortically-limited, lobulated opacity in fibula.",
+          "normalized": "Cortically-limited, lobulated opacity in fibula.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Sclerotic plaque within phalanx without cortical disruption.",
+          "normalized": "Sclerotic plaque within phalanx without cortical disruption.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Oval dense area in calcaneum, centrally located.",
+          "normalized": "Oval dense area in calcaneum, centrally located.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Cortically-limited, lobulated opacity in fibula.",
+          "normalized": "Cortically-limited, lobulated opacity in fibula.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Sclerotic plaque within phalanx without cortical disruption.",
+          "normalized": "Sclerotic plaque within phalanx without cortical disruption.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Oval dense area in calcaneum, centrally located.",
+          "normalized": "Oval dense area in calcaneum, centrally located.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Cortically-limited, lobulated opacity in fibula.",
+          "normalized": "Cortically-limited, lobulated opacity in fibula.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Sclerotic plaque within phalanx without cortical disruption.",
+          "normalized": "Sclerotic plaque within phalanx without cortical disruption.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Oval dense area in calcaneum, centrally located.",
+          "normalized": "Oval dense area in calcaneum, centrally located.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Cortically-limited, lobulated opacity in fibula.",
+          "normalized": "Cortically-limited, lobulated opacity in fibula.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Sclerotic plaque within phalanx without cortical disruption.",
+          "normalized": "Sclerotic plaque within phalanx without cortical disruption.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Oval dense area in calcaneum, centrally located.",
+          "normalized": "Oval dense area in calcaneum, centrally located.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        }
+      ]
+    },
+    "osteosarcoma": {
+      "attributes_candidates": [
+        {
+          "text": "- Codman triangle presence",
+          "normalized": "Codman triangle presence",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "- Sunburst periosteal reaction",
+          "normalized": "Sunburst periosteal reaction",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "- Mixed lytic-sclerotic lesion",
+          "normalized": "Mixed lytic-sclerotic lesion",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "- Irregular cortical destruction",
+          "normalized": "Irregular cortical destruction",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "- Soft tissue mass extension",
+          "normalized": "Soft tissue mass extension",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "- Rapid bone expansion",
+          "normalized": "Rapid bone expansion",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        }
+      ],
+      "description_candidates": [
+        {
+          "text": "- Codman triangle present at proximal tibia.",
+          "normalized": "Codman triangle present at proximal tibia.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sunburst periosteal reaction around distal femur.",
+          "normalized": "Sunburst periosteal reaction around distal femur.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 2,
+            "distinctive_count": 2,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Mixed lytic-sclerotic lesion in mid-shaft humerus.",
+          "normalized": "Mixed lytic-sclerotic lesion in mid-shaft humerus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Irregular cortical destruction noted at metaphyseal fibula.",
+          "normalized": "Irregular cortical destruction noted at metaphyseal fibula.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Rapid bone expansion with soft tissue mass extending into knee joint.",
+          "normalized": "Rapid bone expansion with soft tissue mass extending into knee joint.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sclerotic rim surrounding destructive lesion in calcaneus.",
+          "normalized": "Sclerotic rim surrounding destructive lesion in calcaneus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile growth pattern with cortical breach in scapula.",
+          "normalized": "Expansile growth pattern with cortical breach in scapula.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Multiple discrete foci of lytic lesions in vertebral body.",
+          "normalized": "Multiple discrete foci of lytic lesions in vertebral body.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Codman triangle present at proximal tibia.",
+          "normalized": "Codman triangle present at proximal tibia.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sunburst periosteal reaction around distal femur.",
+          "normalized": "Sunburst periosteal reaction around distal femur.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 2,
+            "distinctive_count": 2,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Mixed lytic-sclerotic lesion in mid-shaft humerus.",
+          "normalized": "Mixed lytic-sclerotic lesion in mid-shaft humerus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Irregular cortical destruction noted at metaphyseal fibula.",
+          "normalized": "Irregular cortical destruction noted at metaphyseal fibula.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Rapid bone expansion with soft tissue mass extending into knee joint.",
+          "normalized": "Rapid bone expansion with soft tissue mass extending into knee joint.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sclerotic rim surrounding destructive lesion in calcaneus.",
+          "normalized": "Sclerotic rim surrounding destructive lesion in calcaneus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile growth pattern with cortical breach in scapula.",
+          "normalized": "Expansile growth pattern with cortical breach in scapula.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Multiple discrete foci of lytic lesions in vertebral body.",
+          "normalized": "Multiple discrete foci of lytic lesions in vertebral body.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Codman triangle present at proximal tibia.",
+          "normalized": "Codman triangle present at proximal tibia.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sunburst periosteal reaction around distal femur.",
+          "normalized": "Sunburst periosteal reaction around distal femur.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 2,
+            "distinctive_count": 2,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Mixed lytic-sclerotic lesion in mid-shaft humerus.",
+          "normalized": "Mixed lytic-sclerotic lesion in mid-shaft humerus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Irregular cortical destruction noted at metaphyseal fibula.",
+          "normalized": "Irregular cortical destruction noted at metaphyseal fibula.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Rapid bone expansion with soft tissue mass extending into knee joint.",
+          "normalized": "Rapid bone expansion with soft tissue mass extending into knee joint.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Sclerotic rim surrounding destructive lesion in calcaneus.",
+          "normalized": "Sclerotic rim surrounding destructive lesion in calcaneus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Expansile growth pattern with cortical breach in scapula.",
+          "normalized": "Expansile growth pattern with cortical breach in scapula.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Multiple discrete foci of lytic lesions in vertebral body.",
+          "normalized": "Multiple discrete foci of lytic lesions in vertebral body.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "Cortical destruction with sunburst periosteal reaction around diaphysis.",
+          "normalized": "Cortical destruction with sunburst periosteal reaction around diaphysis.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 20.0,
+            "radiographic_count": 5,
+            "distinctive_count": 3,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Irregularly punched-out lytic lesion at metaphyseal region.",
+          "normalized": "Irregularly punched-out lytic lesion at metaphyseal region.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Osteolytic lesion with central sclerosis and surrounding reactive骨骺端溶骨性病变，中央伴有硬化灶和周围反应性新骨形成。",
+          "normalized": "Osteolytic lesion with central sclerosis and surrounding reactive骨骺端溶骨性病变，中央伴有硬化灶和周围反应性新骨形成。",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 5,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "长骨干骺端不规则溶骨性破坏伴中央硬化及周边反应性新骨生成。",
+          "normalized": "长骨干骺端不规则溶骨性破坏伴中央硬化及周边反应性新骨生成。",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 0.725,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.725,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "短管状骨多发虫蚀样骨质破坏。",
+          "normalized": "短管状骨多发虫蚀样骨质破坏。",
+          "kept": false,
+          "reason": "char_length",
+          "score": {
+            "total": 0.35,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.35,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "干骺端偏心性膨胀性骨质破坏。",
+          "normalized": "干骺端偏心性膨胀性骨质破坏。",
+          "kept": false,
+          "reason": "char_length",
+          "score": {
+            "total": 0.35,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.35,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "股骨远端Codman三角明显。",
+          "normalized": "股骨远端Codman三角明显。",
+          "kept": false,
+          "reason": "char_length",
+          "score": {
+            "total": 5.375,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 0.375,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "胫骨近端软组织肿块影压迫皮质。",
+          "normalized": "胫骨近端软组织肿块影压迫皮质。",
+          "kept": false,
+          "reason": "char_length",
+          "score": {
+            "total": 0.375,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.375,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Cortical destruction with sunburst periosteal reaction around diaphysis.",
+          "normalized": "Cortical destruction with sunburst periosteal reaction around diaphysis.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 20.0,
+            "radiographic_count": 5,
+            "distinctive_count": 3,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Irregularly punched-out lytic lesion at metaphyseal region.",
+          "normalized": "Irregularly punched-out lytic lesion at metaphyseal region.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Osteolytic lesion with central sclerosis and surrounding reactive骨骺端溶骨性病变，中央伴有硬化灶和周围反应性新骨形成。",
+          "normalized": "Osteolytic lesion with central sclerosis and surrounding reactive骨骺端溶骨性病变，中央伴有硬化灶和周围反应性新骨形成。",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 5,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "长骨干骺端不规则溶骨性破坏伴中央硬化及周边反应性新骨生成。",
+          "normalized": "长骨干骺端不规则溶骨性破坏伴中央硬化及周边反应性新骨生成。",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 0.725,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.725,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "短管状骨多发虫蚀样骨质破坏。",
+          "normalized": "短管状骨多发虫蚀样骨质破坏。",
+          "kept": false,
+          "reason": "char_length",
+          "score": {
+            "total": 0.35,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.35,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "干骺端偏心性膨胀性骨质破坏。",
+          "normalized": "干骺端偏心性膨胀性骨质破坏。",
+          "kept": false,
+          "reason": "char_length",
+          "score": {
+            "total": 0.35,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.35,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "股骨远端Codman三角明显。",
+          "normalized": "股骨远端Codman三角明显。",
+          "kept": false,
+          "reason": "char_length",
+          "score": {
+            "total": 5.375,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 0.375,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "胫骨近端软组织肿块影压迫皮质。",
+          "normalized": "胫骨近端软组织肿块影压迫皮质。",
+          "kept": false,
+          "reason": "char_length",
+          "score": {
+            "total": 0.375,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.375,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Giant destructive lesion at metaphyseal-diaphyseal junction.",
+          "normalized": "Giant destructive lesion at metaphyseal-diaphyseal junction.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Irregular cortical erosion with patchy calcification.",
+          "normalized": "Irregular cortical erosion with patchy calcification.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Well-defined lytic lesion with sclerotic margin.",
+          "normalized": "Well-defined lytic lesion with sclerotic margin.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 5,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Multiple coalescent lytic areas in distal femur.",
+          "normalized": "Multiple coalescent lytic areas in distal femur.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Oval-shaped lucency with Codman triangle.",
+          "normalized": "Oval-shaped lucency with Codman triangle.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Centripetal pattern of bone resorption.",
+          "normalized": "Centripetal pattern of bone resorption.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 0.975,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.975,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Giant destructive lesion at metaphyseal-diaphyseal junction.",
+          "normalized": "Giant destructive lesion at metaphyseal-diaphyseal junction.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Irregular cortical erosion with patchy calcification.",
+          "normalized": "Irregular cortical erosion with patchy calcification.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Well-defined lytic lesion with sclerotic margin.",
+          "normalized": "Well-defined lytic lesion with sclerotic margin.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 5,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Multiple coalescent lytic areas in distal femur.",
+          "normalized": "Multiple coalescent lytic areas in distal femur.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Oval-shaped lucency with Codman triangle.",
+          "normalized": "Oval-shaped lucency with Codman triangle.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 6.0,
+            "radiographic_count": 1,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "Centripetal pattern of bone resorption.",
+          "normalized": "Centripetal pattern of bone resorption.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 0.975,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 0.975,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_retry"
+        }
+      ]
+    },
+    "simple bone cyst": {
+      "attributes_candidates": [
+        {
+          "text": "cavitation with fluid level",
+          "normalized": "cavitation with fluid level",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "lack of sclerotic border",
+          "normalized": "lack of sclerotic border",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "unilocular lytic lesion",
+          "normalized": "unilocular lytic lesion",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "no periosteal reaction",
+          "normalized": "no periosteal reaction",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "centrally located in diaphysis",
+          "normalized": "centrally located in diaphysis",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "well-defined margins",
+          "normalized": "well-defined margins",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        }
+      ],
+      "description_candidates": [
+        {
+          "text": "- Central lytic lesion in femoral shaft, clearly demarcated.",
+          "normalized": "Central lytic lesion in femoral shaft, clearly demarcated.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Unicavitary, expansile lytic area in humeral diaphysis.",
+          "normalized": "Unicavitary, expansile lytic area in humeral diaphysis.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Well-defined, solitary lytic spot in tibia without sclerosis.",
+          "normalized": "Well-defined, solitary lytic spot in tibia without sclerosis.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Diaphyseal lytic region in radius, no periosteal reaction.",
+          "normalized": "Diaphyseal lytic region in radius, no periosteal reaction.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Single, sharply defined lytic zone in ulna, central position.",
+          "normalized": "Single, sharply defined lytic zone in ulna, central position.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Medullary cavity lytic lesion in fibula, smooth borders.",
+          "normalized": "Medullary cavity lytic lesion in fibula, smooth borders.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Simple lytic defect in distal femur, lacks sclerotic rim.",
+          "normalized": "Simple lytic defect in distal femur, lacks sclerotic rim.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Clear-cut, unilocular lytic focus in proximal tibia.",
+          "normalized": "Clear-cut, unilocular lytic focus in proximal tibia.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Central lytic lesion in femoral shaft, clearly demarcated.",
+          "normalized": "Central lytic lesion in femoral shaft, clearly demarcated.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Unicavitary, expansile lytic area in humeral diaphysis.",
+          "normalized": "Unicavitary, expansile lytic area in humeral diaphysis.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Well-defined, solitary lytic spot in tibia without sclerosis.",
+          "normalized": "Well-defined, solitary lytic spot in tibia without sclerosis.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Diaphyseal lytic region in radius, no periosteal reaction.",
+          "normalized": "Diaphyseal lytic region in radius, no periosteal reaction.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Single, sharply defined lytic zone in ulna, central position.",
+          "normalized": "Single, sharply defined lytic zone in ulna, central position.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Medullary cavity lytic lesion in fibula, smooth borders.",
+          "normalized": "Medullary cavity lytic lesion in fibula, smooth borders.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Simple lytic defect in distal femur, lacks sclerotic rim.",
+          "normalized": "Simple lytic defect in distal femur, lacks sclerotic rim.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Clear-cut, unilocular lytic focus in proximal tibia.",
+          "normalized": "Clear-cut, unilocular lytic focus in proximal tibia.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Central lytic lesion in femoral shaft, clearly demarcated.",
+          "normalized": "Central lytic lesion in femoral shaft, clearly demarcated.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Unicavitary, expansile lytic area in humeral diaphysis.",
+          "normalized": "Unicavitary, expansile lytic area in humeral diaphysis.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Well-defined, solitary lytic spot in tibia without sclerosis.",
+          "normalized": "Well-defined, solitary lytic spot in tibia without sclerosis.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Diaphyseal lytic region in radius, no periosteal reaction.",
+          "normalized": "Diaphyseal lytic region in radius, no periosteal reaction.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Single, sharply defined lytic zone in ulna, central position.",
+          "normalized": "Single, sharply defined lytic zone in ulna, central position.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Medullary cavity lytic lesion in fibula, smooth borders.",
+          "normalized": "Medullary cavity lytic lesion in fibula, smooth borders.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Simple lytic defect in distal femur, lacks sclerotic rim.",
+          "normalized": "Simple lytic defect in distal femur, lacks sclerotic rim.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Clear-cut, unilocular lytic focus in proximal tibia.",
+          "normalized": "Clear-cut, unilocular lytic focus in proximal tibia.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Unilocular lytic area in humeral diaphysis, uniform density.",
+          "normalized": "Unilocular lytic area in humeral diaphysis, uniform density.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Solitary lytic lesion in calcaneus, well-circumscribed margin.",
+          "normalized": "Solitary lytic lesion in calcaneus, well-circumscribed margin.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Centrally located lytic spot in proximal phalanx of finger.",
+          "normalized": "Centrally located lytic spot in proximal phalanx of finger.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 8.0,
+            "radiographic_count": 2,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Bilateral symmetrical lytic changes in metaphyses of long bones.",
+          "normalized": "Bilateral symmetrical lytic changes in metaphyses of long bones.",
+          "kept": false,
+          "reason": "insufficient_radiographic_keywords",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        }
+      ]
+    },
+    "synovial osteochondroma": {
+      "attributes_candidates": [
+        {
+          "text": "soft tissue mass base",
+          "normalized": "soft tissue mass base",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "central lesion position",
+          "normalized": "central lesion position",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "ground glass matrix texture",
+          "normalized": "ground glass matrix texture",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "spiculated margin appearance",
+          "normalized": "spiculated margin appearance",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "cortical indentation sign",
+          "normalized": "cortical indentation sign",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        },
+        {
+          "text": "eccentric lesion shape",
+          "normalized": "eccentric lesion shape",
+          "kept": true,
+          "reason": "accepted",
+          "attempt": 1,
+          "stage": "attributes"
+        }
+      ],
+      "description_candidates": [
+        {
+          "text": "- Soft tissue mass at knee with ground-glass matrix.",
+          "normalized": "Soft tissue mass at knee with ground-glass matrix.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Central femoral lesion with spiculated margins.",
+          "normalized": "Central femoral lesion with spiculated margins.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Tibia lesion demonstrates eccentric growth pattern.",
+          "normalized": "Tibia lesion demonstrates eccentric growth pattern.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical indentation noted in proximal humerus.",
+          "normalized": "Cortical indentation noted in proximal humerus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Calcified nodule with sclerotic rim in distal radius.",
+          "normalized": "Calcified nodule with sclerotic rim in distal radius.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Lytic lesion in scapula with surrounding ground-glass density.",
+          "normalized": "Lytic lesion in scapula with surrounding ground-glass density.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Periosteal reaction present around metaphyseal tibia.",
+          "normalized": "Periosteal reaction present around metaphyseal tibia.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Bilateral sacroiliac lytic lesions with central calcification.",
+          "normalized": "Bilateral sacroiliac lytic lesions with central calcification.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Soft tissue mass at knee with ground-glass matrix.",
+          "normalized": "Soft tissue mass at knee with ground-glass matrix.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Central femoral lesion with spiculated margins.",
+          "normalized": "Central femoral lesion with spiculated margins.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Tibia lesion demonstrates eccentric growth pattern.",
+          "normalized": "Tibia lesion demonstrates eccentric growth pattern.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical indentation noted in proximal humerus.",
+          "normalized": "Cortical indentation noted in proximal humerus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Calcified nodule with sclerotic rim in distal radius.",
+          "normalized": "Calcified nodule with sclerotic rim in distal radius.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Lytic lesion in scapula with surrounding ground-glass density.",
+          "normalized": "Lytic lesion in scapula with surrounding ground-glass density.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Periosteal reaction present around metaphyseal tibia.",
+          "normalized": "Periosteal reaction present around metaphyseal tibia.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Bilateral sacroiliac lytic lesions with central calcification.",
+          "normalized": "Bilateral sacroiliac lytic lesions with central calcification.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 2,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Soft tissue mass at knee with ground-glass matrix.",
+          "normalized": "Soft tissue mass at knee with ground-glass matrix.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Central femoral lesion with spiculated margins.",
+          "normalized": "Central femoral lesion with spiculated margins.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Tibia lesion demonstrates eccentric growth pattern.",
+          "normalized": "Tibia lesion demonstrates eccentric growth pattern.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Cortical indentation noted in proximal humerus.",
+          "normalized": "Cortical indentation noted in proximal humerus.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 3.0,
+            "radiographic_count": 1,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Calcified nodule with sclerotic rim in distal radius.",
+          "normalized": "Calcified nodule with sclerotic rim in distal radius.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 10.0,
+            "radiographic_count": 3,
+            "distinctive_count": 1,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Lytic lesion in scapula with surrounding ground-glass density.",
+          "normalized": "Lytic lesion in scapula with surrounding ground-glass density.",
+          "kept": false,
+          "reason": "near_duplicate",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Periosteal reaction present around metaphyseal tibia.",
+          "normalized": "Periosteal reaction present around metaphyseal tibia.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Bilateral sacroiliac lytic lesions with central calcification.",
+          "normalized": "Bilateral sacroiliac lytic lesions with central calcification.",
+          "kept": false,
+          "reason": "word_length",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 3,
+          "stage": "descriptions_main"
+        },
+        {
+          "text": "- Well-defined lytic lesion with central calcification in femur shaft.",
+          "normalized": "Well-defined lytic lesion with central calcification in femur shaft.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 11.0,
+            "radiographic_count": 5,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Bilateral metaphyseal lucency with cortical thickening and sclerosis.",
+          "normalized": "Bilateral metaphyseal lucency with cortical thickening and sclerosis.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 7.0,
+            "radiographic_count": 3,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Ovoid soft-tissue shadow with peripheral ossification at elbow.",
+          "normalized": "Ovoid soft-tissue shadow with peripheral ossification at elbow.",
+          "kept": false,
+          "reason": "insufficient_radiographic_keywords",
+          "score": {
+            "total": 1.0,
+            "radiographic_count": 0,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Cortical scalloping adjacent to expansile lytic lesion in tibia.",
+          "normalized": "Cortical scalloping adjacent to expansile lytic lesion in tibia.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Central calcification within a multilocular lytic lesion of humerus.",
+          "normalized": "Central calcification within a multilocular lytic lesion of humerus.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Eccentric lytic area with sclerotic margin in proximal fibula.",
+          "normalized": "Eccentric lytic area with sclerotic margin in proximal fibula.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 9.0,
+            "radiographic_count": 4,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        },
+        {
+          "text": "- Irregularly shaped soft-tissue mass with internal calcifications near ankle.",
+          "normalized": "Irregularly shaped soft-tissue mass with internal calcifications near ankle.",
+          "kept": true,
+          "reason": "accepted",
+          "score": {
+            "total": 5.0,
+            "radiographic_count": 2,
+            "distinctive_count": 0,
+            "length_score": 1.0,
+            "weak_start": false,
+            "has_forbidden": false
+          },
+          "attempt": 1,
+          "stage": "descriptions_retry"
+        }
+      ]
+    }
+  },
+  "meta": {
+    "dataset_name": "bone_xray",
+    "class_names": [
+      "giant cell tumor",
+      "osteochondroma",
+      "osteofibroma",
+      "osteosarcoma",
+      "simple bone cyst",
+      "synovial osteochondroma"
+    ],
+    "num_questions": 10,
+    "num_attributes": 6,
+    "num_descriptions": 8
+  }
+}

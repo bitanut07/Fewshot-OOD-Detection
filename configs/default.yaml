@@ -1,9 +1,11 @@
 # =============================================================================
 # Default Configuration for GLOCAL-FSL-OOD
+# Optimized for BTXRD Bone X-ray | Few-shot (k=1) + OOD Detection
 # =============================================================================
 
 # =============================================================================
-# LLM Configuration (for OFFLINE description generation)
+# LLM Configuration (OFFLINE description generation only)
+# Low temperature + constrained top_p → stable, deterministic medical text
 # =============================================================================
 model:
   llm:
@@ -11,13 +13,13 @@ model:
     device_map: "auto"
     torch_dtype: "float16"
     max_new_tokens: 512
-    temperature: 0.7
-    top_p: 0.9
+    temperature: 0.3
+    top_p: 0.85
     do_sample: true
     cache_dir: null
     freeze: true
     trust_remote_code: true
-    repetition_penalty: 1.1
+    repetition_penalty: 1.15
 
 # =============================================================================
 # LLM Description Generation Configuration (OFFLINE)
@@ -25,48 +27,45 @@ model:
 llm_descriptions:
   enabled: true
 
-  # Number of discriminative questions to generate for the whole dataset
   num_questions: 10
+  num_descriptions_per_class: 8
 
-  # Number of descriptions per class
-  num_descriptions_per_class: 5
-
-  # Dataset context — injected into prompts so LLM understands the domain.
-  # Can reference dataset name, known class names, and domain summary.
-  # Example values below; override via experiment config or --dataset_desc flag.
+  # Domain context — NO OOD class names leaked; kept general for prompt safety
   dataset_description: >
-    A bone X-ray image dataset containing {num_classes} disease classes
-    for few-shot classification and OOD detection.
-    Known classes include: No Finding, Fracture, Osteoarthritis, Bone Lesion,
-    Osteoporosis, Degenerative Joint Disease, Spondylosis, Disc Degeneration,
-    Spinal Stenosis, Scoliosis. OOD classes include: Osteomyelitis, Bone Tumor,
-    Metastatic Bone Disease, Avascular Necrosis, Paget Disease.
-    This dataset is used to evaluate model generalization to unseen disease types.
+    A bone X-ray image dataset for few-shot classification and OOD detection
+    of bone tumor types. The dataset contains radiographic images of various
+    bone tumors and lesions captured from standard clinical X-ray imaging.
+    Classification targets include benign and malignant bone tumors with
+    distinct radiographic appearances. The model must distinguish tumor types
+    based solely on visible structural and density features in X-ray images.
 
   # Prompt template for generating discriminative questions
   question_prompt_template: |
-    You are a medical imaging expert specializing in bone X-ray analysis.
+    You are a musculoskeletal radiologist specializing in bone tumor X-ray analysis.
 
     Dataset description:
     {dataset_description}
 
     Task:
     Generate {num_questions} diagnostic questions that help distinguish between
-    different bone diseases in X-ray images.
+    different bone tumor types in X-ray images.
 
     Requirements:
-    - Focus ONLY on visible radiographic features
-    - Do NOT include diagnosis, treatment, or patient history
-    - Questions must help differentiate diseases visually
-    - Avoid referring to specific absolute positions (e.g., left/right/top/bottom)
+    - Focus ONLY on features visible in plain radiographs
+    - Do NOT mention clinical symptoms (pain, fever, swelling, etc.)
+    - Do NOT mention patient demographics, history, or lab results
+    - Questions must target visually discriminative radiographic signs
+    - Avoid referring to specific absolute positions (left/right/top/bottom)
 
     Focus on:
-    - bone structure and continuity
-    - fracture patterns and cortical disruption
-    - lesion characteristics (e.g., lytic or sclerotic changes)
-    - bone density variations
-    - structural deformities and alignment abnormalities
-    - presence of abnormal growths or irregular bone shapes
+    - lesion morphology (lytic, sclerotic, mixed, expansile)
+    - cortical integrity (intact, thinned, breached, destroyed)
+    - periosteal reaction pattern (none, smooth, spiculated, Codman triangle)
+    - matrix mineralization (absent, ground-glass, cloud-like, ring-arc)
+    - bone contour changes (expansion, deformity, outgrowth)
+    - margin characteristics (well-defined, ill-defined, sclerotic rim)
+    - trabecular pattern (preserved, rarefied, destroyed)
+    - intra/extra-osseous extension and soft tissue involvement
 
     Output:
     - One question per line
@@ -75,58 +74,58 @@ llm_descriptions:
 
   # Prompt template for generating descriptions per class
   description_prompt_template: |
-    You are a medical imaging expert specializing in bone X-ray interpretation.
+    You are a musculoskeletal radiologist specializing in bone tumor X-ray interpretation.
 
-    Target disease class: "{class_name}"
+    Target bone tumor class: "{class_name}"
 
     {questions_block}
 
     Task:
-    Generate {num_descriptions} diverse and clinically accurate visual descriptions
-    of this disease as seen in bone X-ray images.
+    Generate {num_descriptions} diverse and radiographically accurate visual descriptions
+    of this bone tumor as seen in plain X-ray images.
 
-    Requirements:
-    - Each description must be ONE sentence
-    - Focus ONLY on visible radiographic features
-    - Avoid diagnosis, treatment, or clinical symptoms outside the image
-    - Avoid uncertainty words (e.g., "may", "possibly")
-    - Avoid absolute spatial positions (e.g., left/right/top/bottom)
-    - Each description must highlight a distinct visual feature
-    - Use clear and professional medical language
-    - Prefer concise descriptions suitable for a vision-language model
+    Strict requirements:
+    - Each description must be exactly ONE sentence
+    - Describe ONLY features visible on plain radiographs
+    - Do NOT mention clinical symptoms (pain, tenderness, swelling, etc.)
+    - Do NOT mention patient history, age, gender, or lab results
+    - Do NOT use uncertainty hedging ("may", "possibly", "sometimes")
+    - Do NOT use absolute spatial terms (left/right/top/bottom)
+    - Each description MUST highlight a distinct radiographic feature
+    - Descriptions must be visually discriminative from other tumor types
+    - Use precise radiological terminology
 
     Focus on:
-    - bone structure and integrity
-    - fracture lines and cortical disruption (if present)
-    - lesion characteristics (e.g., radiolucent or radiopaque regions)
-    - bone density variations
-    - abnormal growths or masses
-    - structural deformities and alignment changes
-    - trabecular pattern changes
-    - bone surface irregularities
+    - lesion location within the bone (epiphysis, metaphysis, diaphysis)
+    - lesion pattern (lytic, sclerotic, mixed, geographic, permeative, moth-eaten)
+    - cortical changes (thinning, expansion, breach, destruction)
+    - periosteal reaction (lamellated, sunburst, Codman triangle, none)
+    - matrix pattern (osteoid, chondroid, ground-glass, absent)
+    - margin definition (sharp, sclerotic rim, ill-defined)
+    - bone contour and trabecular architecture changes
+    - soft tissue component presence
 
     Output:
     - One description per line
     - No numbering
     - No explanations
 
-  # Default prompts used when prompt_template is null in generate_all_descriptions
   default_prompts:
     questions: |
-      You are a medical imaging expert. Generate {num_questions} diagnostic questions
-      about bone X-ray findings. Focus on visual features only.
+      You are a musculoskeletal radiologist. Generate {num_questions} diagnostic questions
+      about bone tumor X-ray findings. Focus on visible radiographic features only.
       Output one per line, no numbering.
     descriptions: |
-      Generate {num_descriptions} descriptions for the disease: "{class_name}".
-      Focus on visible radiographic features only. Output one per line.
+      Generate {num_descriptions} radiographic descriptions for the bone tumor: "{class_name}".
+      Focus on visible X-ray features only. One sentence per description, one per line.
 
   use_template_prompt: true
 
   # Output files
   output_file: "data/prompts/class_descriptions.yaml"
   questions_output_file: "data/prompts/class_questions.yaml"
+  glali_output_file: "data/prompts/class_descriptions.json"
 
-  # Generation settings
   generation_batch_size: 1
   cache_generated: true
 
@@ -157,7 +156,8 @@ local_contrastive:
   use_cosine_similarity: true
   normalize_embeddings: true
   contrastive_mode: "supervised"
-  num_negatives: 63
+  # batch_size=4, n_way=6, k_shot=1 → effective negatives per anchor
+  num_negatives: 5
   trainable: true
   use_momentum_prototype: false
   momentum: 0.999
@@ -201,9 +201,10 @@ loss:
 
 # =============================================================================
 # Training Configuration
+# Few-shot k=1 → short schedule + mixed precision to reduce overfitting
 # =============================================================================
 train:
-  epochs: 100
+  epochs: 40
   batch_size: 4
   optimizer:
     type: "AdamW"
@@ -211,16 +212,16 @@ train:
     weight_decay: 0.01
   scheduler:
     type: "CosineAnnealingLR"
-    T_max: 100
+    T_max: 40
     eta_min: 0.000001
-  warmup_epochs: 10
+  warmup_epochs: 5
   grad_clip: 1.0
-  mixed_precision: false
+  mixed_precision: true
   ema: false
   ema_decay: 0.999
 
 fewshot:
-  n_way: 5
+  n_way: 6
   k_shot: 1
   n_query: 15
 
@@ -231,8 +232,8 @@ eval:
   checkpoint_path: null
   save_predictions: true
 
+# Percentile-based threshold adapts to score distribution per run
 ood:
   method: "msp"
-  threshold_strategy: "fixed"
-  fixed_threshold: 0.0
+  threshold_strategy: "percentile"
   percentile: 95

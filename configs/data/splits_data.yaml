@@ -26,7 +26,7 @@ data:
     - "no_tumor"
     - "fractured"
 
-  known_classes: [0, 1, 2, 3, 4, 5]
+  id_classes: [0, 1, 2, 3, 4, 5]
   ood_classes: [6, 7]
 
   train_split_file: "data/splits/splits_dataset/8shot_seed1_train.txt"

@@ -1,0 +1,128 @@
+model:
+  llm:
+    model_name: Qwen/Qwen2.5-7B-Instruct
+    device_map: auto
+    torch_dtype: float16
+    max_new_tokens: 512
+    temperature: 0.7
+    top_p: 0.9
+    do_sample: true
+    cache_dir: null
+    freeze: true
+    trust_remote_code: true
+    repetition_penalty: 1.1
+data:
+  class_names:
+  - giant cell tumor
+  - osteochondroma
+  - osteofibroma
+  - osteosarcoma
+  - simple bone cyst
+  - synovial osteochondroma
+  - no_tumor
+  - fractured
+  id_classes:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  ood_classes:
+  - 6
+  - 7
+llm_descriptions:
+  class_scope: id
+  num_questions: 2
+  num_descriptions_per_class: 1
+  dataset_description: 'A bone X-ray image dataset focused on ID classes only for
+    few-shot learning. The selected ID classes are: {class_names}. Questions are designed
+    across multiple detail levels, from coarse discrimination (e.g., benign-versus-malignant
+    tendency) to morphology (lesion margin, cortical involvement), anatomical location
+    (epiphysis, metaphysis, diaphysis), and finer radiographic cues such as periosteal
+    reaction or matrix pattern. The filtering process removes vague wording, semantically
+    duplicated questions, and content that cannot be verified directly from X-ray
+    images.
+
+    '
+  question_prompt_template: "You are a medical imaging expert specializing in bone\
+    \ X-ray analysis.\n\nDataset description:\n{dataset_description}\n\nTask:\nGenerate\
+    \ {num_questions} diagnostic questions that help distinguish between\nID classes\
+    \ in bone X-ray images.\n\nRequirements:\n- Focus ONLY on visible radiographic\
+    \ features\n- Do NOT include diagnosis, treatment, or patient history\n- Questions\
+    \ must help differentiate ID classes visually\n- Avoid referring to specific absolute\
+    \ positions (e.g., left/right/top/bottom)\n- Avoid vague wording such as \"abnormal\
+    \ area\", \"lesion region\", or \"abnormality\"\n  without concrete visible cues\n\
+    - Avoid duplicate semantic intent across questions\n- Exclude information that\
+    \ cannot be directly observed on a plain X-ray image\n\nFocus on:\n- bone structure\
+    \ and continuity\n- fracture patterns and cortical disruption\n- lesion characteristics\
+    \ (e.g., lytic or sclerotic changes)\n- bone density variations\n- structural\
+    \ deformities and alignment abnormalities\n- presence of abnormal growths or irregular\
+    \ bone shapes\n\nOutput:\n- One question per line\n- No numbering\n- No explanations\n"
+  description_prompt_template: 'You are a medical imaging expert specializing in bone
+    X-ray interpretation.
+
+
+    Target disease class: "{class_name}"
+
+
+    {questions_block}
+
+
+    Task:
+
+    Generate {num_descriptions} diverse and clinically accurate visual descriptions
+
+    of this disease as seen in bone X-ray images.
+
+
+    Requirements:
+
+    - Each description must be ONE sentence
+
+    - Focus ONLY on visible radiographic features
+
+    - Avoid diagnosis, treatment, or clinical symptoms outside the image
+
+    - Avoid uncertainty words (e.g., "may", "possibly")
+
+    - Avoid absolute spatial positions (e.g., left/right/top/bottom)
+
+    - Each description must highlight a distinct visual feature
+
+    - Use clear and professional medical language
+
+    - Prefer concise descriptions suitable for a vision-language model
+
+
+    Focus on:
+
+    - bone structure and integrity
+
+    - fracture lines and cortical disruption (if present)
+
+    - lesion characteristics (e.g., radiolucent or radiopaque regions)
+
+    - bone density variations
+
+    - abnormal growths or masses
+
+    - structural deformities and alignment changes
+
+    - trabecular pattern changes
+
+    - bone surface irregularities
+
+
+    Output:
+
+    - One description per line
+
+    - No numbering
+
+    - No explanations
+
+    '
+  questions_output_file: /Users/lap14568/Fewshot-OOD-Detection/data/prompts/test_pipeline/class_questions.yaml
+  output_file: /Users/lap14568/Fewshot-OOD-Detection/data/prompts/test_pipeline/class_descriptions.yaml
+  descriptions_json_file: /Users/lap14568/Fewshot-OOD-Detection/data/prompts/test_pipeline/class_descriptions.json
