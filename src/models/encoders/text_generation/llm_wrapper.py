@@ -20,7 +20,10 @@ Key improvements over single-stage generation:
 """
 from __future__ import annotations
 
+import json
 import logging
+from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from .base_generator import BaseTextGenerator, GenerationConfig
@@ -107,6 +110,33 @@ class LLMWrapper:
         self.cache = cache_manager or CacheManager()
 
         self.max_retries = max_retries
+        self._quality_report_path: Optional[str] = None
+        self._quality_trace: Dict[str, Any] = {}
+
+    def enable_quality_report(self, report_path: str) -> None:
+        self._quality_report_path = report_path
+        self._quality_trace = {
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "model_name": self.generator.model_name(),
+            "seed": self.gen_config.seed,
+            "generation_config": self.gen_config.as_dict(),
+            "classes": {},
+        }
+
+    def _quality_enabled(self) -> bool:
+        return bool(self._quality_report_path and "classes" in self._quality_trace)
+
+    def export_quality_report(self, extra_meta: Optional[dict] = None) -> None:
+        if not self._quality_report_path:
+            return
+        out = Path(self._quality_report_path)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        payload = dict(self._quality_trace)
+        if extra_meta:
+            payload["meta"] = extra_meta
+        with open(out, "w", encoding="utf-8") as f:
+            json.dump(payload, f, ensure_ascii=False, indent=2)
+        log.info("Quality report saved → %s", out)
 
     # =========================================================================
     # Step 1: Question generation
@@ -172,6 +202,10 @@ class LLMWrapper:
         )
 
         all_attrs: List[str] = []
+        class_report = None
+        if self._quality_enabled():
+            class_report = self._quality_trace["classes"].setdefault(class_name, {})
+            class_report.setdefault("attributes_candidates", [])
         for attempt in range(1, self.max_retries + 1):
             remaining = num_attributes - len(all_attrs)
             if remaining <= 0:
@@ -179,7 +213,12 @@ class LLMWrapper:
 
             cfg = self._make_config(extra_tokens=64 * (attempt - 1))
             raw = self.generator.generate(prompt, config=cfg)
-            new = self.cleaner.clean_attributes(raw)
+            new, detailed = self.cleaner.clean_with_report(raw, mode="attribute")
+            if class_report is not None:
+                for item in detailed:
+                    item["attempt"] = attempt
+                    item["stage"] = "attributes"
+                class_report["attributes_candidates"].extend(detailed)
 
             for attr in new:
                 if attr not in all_attrs:
@@ -224,6 +263,10 @@ class LLMWrapper:
         )
 
         all_lines: List[str] = []
+        class_report = None
+        if self._quality_enabled():
+            class_report = self._quality_trace["classes"].setdefault(class_name, {})
+            class_report.setdefault("description_candidates", [])
 
         # First pass: generate with main prompt
         for attempt in range(1, self.max_retries + 1):
@@ -233,7 +276,21 @@ class LLMWrapper:
 
             cfg = self._make_config(extra_tokens=128 * (attempt - 1))
             raw = self.generator.generate(prompt, config=cfg)
-            new = self.cleaner.clean(raw, existing=all_lines)
+            new, detailed = self.cleaner.clean_with_report(raw, mode="description", existing=all_lines)
+            if class_report is not None:
+                for item in detailed:
+                    scored = self.scorer.score(item["normalized"], class_name=class_name)
+                    item["score"] = {
+                        "total": scored.total_score,
+                        "radiographic_count": scored.radiographic_count,
+                        "distinctive_count": scored.distinctive_count,
+                        "length_score": scored.length_score,
+                        "weak_start": scored.weak_start,
+                        "has_forbidden": scored.has_forbidden,
+                    }
+                    item["attempt"] = attempt
+                    item["stage"] = "descriptions_main"
+                class_report["description_candidates"].extend(detailed)
 
             # Score and filter
             scored_new = self.scorer.select_diverse_topk(
@@ -297,7 +354,23 @@ class LLMWrapper:
 
             cfg = self._make_config(extra_tokens=64 * attempt)
             raw = self.generator.generate(prompt, config=cfg)
-            new = self.cleaner.clean(raw, existing=result)
+            new, detailed = self.cleaner.clean_with_report(raw, mode="description", existing=result)
+            if self._quality_enabled():
+                class_report = self._quality_trace["classes"].setdefault(class_name, {})
+                class_report.setdefault("description_candidates", [])
+                for item in detailed:
+                    scored = self.scorer.score(item["normalized"], class_name=class_name)
+                    item["score"] = {
+                        "total": scored.total_score,
+                        "radiographic_count": scored.radiographic_count,
+                        "distinctive_count": scored.distinctive_count,
+                        "length_score": scored.length_score,
+                        "weak_start": scored.weak_start,
+                        "has_forbidden": scored.has_forbidden,
+                    }
+                    item["attempt"] = attempt
+                    item["stage"] = "descriptions_retry"
+                class_report["description_candidates"].extend(detailed)
 
             scored = self.scorer.select_diverse_topk(
                 new, class_name=class_name, k=max(remaining + 2, 4), min_score=0.0

@@ -183,6 +183,57 @@ class OutputCleaner:
 
         return new_lines
 
+    def clean_with_report(
+        self,
+        raw_text: str,
+        mode: str = "description",
+        max_lines: Optional[int] = None,
+        existing: Optional[List[str]] = None,
+    ) -> tuple[List[str], List[dict]]:
+        """Parse text and return accepted lines plus candidate-level report."""
+        accepted: List[str] = list(existing or [])
+        new_lines: List[str] = []
+        report: List[dict] = []
+
+        for raw_line in raw_text.split("\n"):
+            original = raw_line.strip()
+            line = self._preprocess(raw_line)
+            if not line:
+                continue
+
+            keep, reason = self._passes_with_reason(line, mode=mode)
+            if not keep:
+                report.append({
+                    "text": original or line,
+                    "normalized": line,
+                    "kept": False,
+                    "reason": reason,
+                })
+                continue
+
+            if self._is_near_duplicate(line, accepted):
+                report.append({
+                    "text": original or line,
+                    "normalized": line,
+                    "kept": False,
+                    "reason": "near_duplicate",
+                })
+                continue
+
+            accepted.append(line)
+            new_lines.append(line)
+            report.append({
+                "text": original or line,
+                "normalized": line,
+                "kept": True,
+                "reason": "accepted",
+            })
+
+            if max_lines is not None and len(new_lines) >= max_lines:
+                break
+
+        return new_lines, report
+
     def clean_attributes(
         self,
         raw_text: str,
@@ -280,6 +331,38 @@ class OutputCleaner:
                 return False
 
         return True
+
+    def _passes_with_reason(self, line: str, mode: str = "description") -> tuple[bool, str]:
+        if mode == "attribute":
+            if len(line) < 10 or len(line) > 80:
+                return False, "attribute_length"
+            if _GENERIC_PATTERNS.match(line):
+                return False, "forbidden_start"
+            if _FORBIDDEN_PHRASE_RE.search(line):
+                return False, "forbidden_phrase"
+            if self.strip_uncertainty and _UNCERTAINTY_RE.search(line):
+                return False, "uncertainty_word"
+            return True, "accepted"
+
+        if len(line) < self.min_length or len(line) > self.max_length:
+            return False, "char_length"
+        words = len(line.split())
+        if words < self.min_words or words > self.max_words:
+            return False, "word_length"
+        if _GENERIC_PATTERNS.match(line):
+            return False, "forbidden_start"
+        if _FORBIDDEN_PHRASE_RE.search(line):
+            return False, "forbidden_phrase"
+        if self.strip_uncertainty and _UNCERTAINTY_RE.search(line):
+            return False, "uncertainty_word"
+        if self.strip_generic:
+            generic_count = len(_WEAK_GENERIC_RE.findall(line))
+            domain_count = self._count_domain_keywords(line)
+            if generic_count > domain_count:
+                return False, "generic_over_specific"
+        if self.require_domain_keyword and self._count_domain_keywords(line) < self.min_domain_keywords:
+            return False, "insufficient_radiographic_keywords"
+        return True, "accepted"
 
     def _count_domain_keywords(self, line: str) -> int:
         """Count how many radiographic keywords appear in the line."""

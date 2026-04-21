@@ -91,6 +91,12 @@ def main():
     parser.add_argument("--num_descriptions", type=int, default=None)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--deterministic", action="store_true")
+    parser.add_argument(
+        "--quality_report",
+        type=str,
+        default=None,
+        help="Optional JSON path to export candidate-level quality report",
+    )
     args = parser.parse_args()
 
     # ── Load config ──────────────────────────────────────────────────────
@@ -170,6 +176,8 @@ def main():
         cache_manager=cache,
         max_retries=3,
     )
+    if args.quality_report:
+        llm.enable_quality_report(args.quality_report)
 
     # ── Cache-first check ────────────────────────────────────────────────
     if not args.force and cache.cache_valid(class_names, num_d):
@@ -265,6 +273,14 @@ def main():
     log.info("  Questions:    %s", questions_out)
     log.info("  Descriptions: %s", descriptions_out)
     log.info("  Flat JSON:    %s", json_out)
+    if args.quality_report:
+        llm.export_quality_report({
+            "dataset_name": cfg.data.get("dataset_name", "bone_xray"),
+            "class_names": class_names,
+            "num_questions": num_q,
+            "num_attributes": num_a,
+            "num_descriptions": num_d,
+        })
 
 
 if __name__ == "__main__":
