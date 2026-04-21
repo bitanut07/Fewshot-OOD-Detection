@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Generate LLM-based class descriptions for known ID classes.
+"""Multi-stage LLM description generation for known ID classes.
 
-Offline preprocessing step that produces:
-  1. Discriminative questions (dataset-level)
-  2. Visual descriptions per known class (guided by questions)
+Implements a two-stage generation pipeline:
+    Stage A: Extract discriminative attributes per class
+    Stage B: Generate CLIP-friendly descriptions from attributes
 
-Outputs are saved in a structured schema (v2) consumed by the CLIP text
-encoder and text-refinement module during training.
+All generation is cross-class aware to maximize discriminability.
 
 **Only known in-distribution (ID) classes receive generated text.**
 OOD detection relies on poor alignment with known-class embeddings.
@@ -16,11 +15,11 @@ Usage:
     python src/scripts/generate_llm_descriptions.py \\
         --config configs/experiment/exp_full_model.yaml
 
-    # Force regeneration even if cache exists:
+    # Force regeneration:
     python src/scripts/generate_llm_descriptions.py \\
         --config configs/experiment/exp_full_model.yaml --force
 
-    # Skip question step (reuse existing):
+    # Skip question generation (reuse existing):
     python src/scripts/generate_llm_descriptions.py \\
         --config configs/experiment/exp_full_model.yaml --skip_questions
 """
@@ -42,6 +41,7 @@ from src.models.encoders.text_generation import (
     HFLocalGenerator,
     PromptBuilder,
     OutputCleaner,
+    DescriptionScorer,
     CacheManager,
 )
 
@@ -76,7 +76,7 @@ def _resolve_id_classes(cfg, override_class_names):
 def main():
     t0 = time.time()
     parser = argparse.ArgumentParser(
-        description="Generate LLM descriptions for known ID classes"
+        description="Multi-stage LLM description generation for known ID classes"
     )
     parser.add_argument("--config", type=str, required=True)
     parser.add_argument("--class_names", type=str, nargs="+", default=None,
@@ -86,6 +86,8 @@ def main():
     parser.add_argument("--force", action="store_true",
                         help="Force regeneration even if valid cache exists")
     parser.add_argument("--num_questions", type=int, default=None)
+    parser.add_argument("--num_attributes", type=int, default=None,
+                        help="Number of discriminative attributes per class (Stage A)")
     parser.add_argument("--num_descriptions", type=int, default=None)
     parser.add_argument("--seed", type=int, default=None)
     parser.add_argument("--deterministic", action="store_true")
@@ -98,7 +100,7 @@ def main():
     # ── Resolve ID classes ───────────────────────────────────────────────
     class_names = _resolve_id_classes(cfg, args.class_names)
     if not class_names:
-        log.error("No class names resolved.  Set --class_names or config.data.class_names.")
+        log.error("No class names resolved. Set --class_names or config.data.class_names.")
         sys.exit(1)
     log.info("Known ID classes (%d): %s", len(class_names), class_names)
 
@@ -107,22 +109,20 @@ def main():
     desc_cfg = cfg.llm_descriptions
 
     num_q = args.num_questions or desc_cfg.get("num_questions", 10)
+    num_a = args.num_attributes or desc_cfg.get("num_attributes_per_class", 6)
     num_d = args.num_descriptions or desc_cfg.get("num_descriptions_per_class", 8)
     seed = args.seed if args.seed is not None else llm_cfg.get("seed", 42)
     deterministic = args.deterministic or llm_cfg.get("deterministic", False)
 
-    log.info("Generation targets: questions=%d, descriptions_per_class=%d", num_q, num_d)
+    log.info("Generation targets: questions=%d, attributes=%d, descriptions=%d", num_q, num_a, num_d)
     log.info("Seed=%s, deterministic=%s", seed, deterministic)
 
     # ── Output paths ─────────────────────────────────────────────────────
     questions_out = desc_cfg.get("questions_output_file", "data/prompts/class_questions.yaml")
     descriptions_out = desc_cfg.get("output_file", "data/prompts/class_descriptions.yaml")
-    json_out = (
-        desc_cfg.get("glali_output_file")
-        or str(Path(descriptions_out).with_suffix(".json"))
-    )
+    json_out = desc_cfg.get("glali_output_file") or str(Path(descriptions_out).with_suffix(".json"))
 
-    # ── Dataset description (no OOD class names) ─────────────────────────
+    # ── Dataset description ──────────────────────────────────────────────
     dataset_desc = desc_cfg.get(
         "dataset_description",
         "A bone X-ray image dataset for few-shot classification of bone tumors."
@@ -152,12 +152,9 @@ def main():
         trust_remote_code=llm_cfg.get("trust_remote_code", True),
     )
 
-    prompt_builder = PromptBuilder(
-        dataset_description=dataset_desc,
-        question_prompt_template=desc_cfg.get("question_prompt_template"),
-        description_prompt_template=desc_cfg.get("description_prompt_template"),
-    )
-
+    prompt_builder = PromptBuilder(dataset_description=dataset_desc)
+    cleaner = OutputCleaner()
+    scorer = DescriptionScorer()
     cache = CacheManager(
         descriptions_path=descriptions_out,
         questions_path=questions_out,
@@ -168,6 +165,8 @@ def main():
         generator=generator,
         generation_config=gen_config,
         prompt_builder=prompt_builder,
+        output_cleaner=cleaner,
+        description_scorer=scorer,
         cache_manager=cache,
         max_retries=3,
     )
@@ -181,64 +180,81 @@ def main():
         log.info("Use --force to regenerate.")
         return
 
-    # ── Step 1: Questions ────────────────────────────────────────────────
-    step1_t = time.time()
+    # ── Run multi-stage generation ───────────────────────────────────────
+    log.info("=" * 60)
+    log.info("Starting multi-stage generation pipeline")
+    log.info("=" * 60)
+
+    # Handle skip_questions
     if args.skip_questions and cache.questions_exist():
         questions = cache.load_questions()
         log.info("Loaded %d existing questions from %s", len(questions), questions_out)
+
+        # Manual generation without question step
+        from src.models.encoders.text_generation.cache_manager import (
+            build_class_entry,
+            build_output_payload,
+        )
+
+        classes_data = {}
+        all_descriptions = {}
+
+        for idx, cls_name in enumerate(class_names, 1):
+            log.info("[%d/%d] Processing '%s' …", idx, len(class_names), cls_name)
+            other_classes = [c for c in class_names if c != cls_name]
+
+            # Stage A
+            attributes = llm.generate_attributes(cls_name, other_classes, num_a)
+            log.info("  → %d attributes", len(attributes))
+
+            # Stage B
+            descriptions = llm.generate_descriptions(
+                cls_name, num_d, other_classes, attributes, questions
+            )
+            log.info("  → %d descriptions", len(descriptions))
+
+            all_descriptions[cls_name] = descriptions
+            classes_data[cls_name] = build_class_entry(
+                default_prompt=prompt_builder.default_prompt(cls_name),
+                attributes=attributes,
+                descriptions=descriptions,
+            )
+
+        # Cross-class dedup
+        log.info("Cross-class deduplication …")
+        deduped = cleaner.remove_cross_class_duplicates(all_descriptions)
+        for cls_name, descs in deduped.items():
+            classes_data[cls_name]["descriptions"] = descs
+            classes_data[cls_name]["metadata"]["num_descriptions"] = len(descs)
+
+        # Save
+        payload = build_output_payload(
+            dataset_name=cfg.data.get("dataset_name", "bone_xray"),
+            model_name=generator.model_name(),
+            seed=seed,
+            generation_config=gen_config.as_dict(),
+            class_names=class_names,
+            questions=questions,
+            classes=classes_data,
+        )
+        cache.save_descriptions(payload)
+        flat = {cls: data["descriptions"] for cls, data in classes_data.items()}
+        cache.save_flat_json(flat)
+
     else:
-        log.info("Generating %d discriminative questions …", num_q)
-        questions = llm.generate_questions(num_q)
-        cache.save_questions(questions)
-        log.info("Generated %d questions in %.1fs", len(questions), time.time() - step1_t)
-        for q in questions:
-            log.info("  Q: %s", q)
-
-    # ── Step 2: Per-class descriptions (ID only) ─────────────────────────
-    step2_t = time.time()
-    log.info("Generating %d descriptions × %d known classes …", num_d, len(class_names))
-
-    from src.models.encoders.text_generation.cache_manager import (
-        build_class_entry,
-        build_output_payload,
-    )
-
-    classes_data = {}
-    flat = {}
-    for idx, cls_name in enumerate(class_names, 1):
-        cls_t = time.time()
-        log.info("[%d/%d] '%s' …", idx, len(class_names), cls_name)
-        descs = llm.generate_descriptions(cls_name, num_d, questions)
-        default_prompt = prompt_builder.default_prompt(cls_name)
-        classes_data[cls_name] = build_class_entry(
-            default_prompts=[default_prompt],
-            generated_descriptions=descs,
+        # Full pipeline
+        llm.generate_all(
+            class_names=class_names,
+            dataset_name=cfg.data.get("dataset_name", "bone_xray"),
+            num_questions=num_q,
+            num_attributes=num_a,
+            num_descriptions=num_d,
+            force_regenerate=True,  # Already checked cache above
         )
-        flat[cls_name] = descs
-        log.info(
-            "[%d/%d] '%s' → %d descriptions (%.1fs)",
-            idx, len(class_names), cls_name, len(descs), time.time() - cls_t,
-        )
-        for d in descs:
-            log.info("    • %s", d)
 
-    log.info("Step 2 completed in %.1fs", time.time() - step2_t)
-
-    # ── Step 3: Save ─────────────────────────────────────────────────────
-    dataset_name = cfg.data.get("dataset_name", "bone_xray")
-    payload = build_output_payload(
-        dataset_name=dataset_name,
-        model_name=generator.model_name(),
-        seed=seed,
-        generation_config=gen_config.as_dict(),
-        class_names=class_names,
-        questions=questions,
-        classes=classes_data,
-    )
-    cache.save_descriptions(payload)
-    cache.save_flat_json(flat)
-
-    log.info("Done in %.1fs", time.time() - t0)
+    log.info("=" * 60)
+    log.info("Generation complete in %.1fs", time.time() - t0)
+    log.info("=" * 60)
     log.info("  Questions:    %s", questions_out)
     log.info("  Descriptions: %s", descriptions_out)
     log.info("  Flat JSON:    %s", json_out)

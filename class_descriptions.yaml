@@ -1,0 +1,148 @@
+schema_version: 2
+dataset_name: bone_xray
+model_name: Qwen/Qwen2.5-7B-Instruct
+seed: 42
+generated_at: '2026-04-21T08:59:21.292545+00:00'
+generation_config:
+  max_new_tokens: 512
+  temperature: 0.3
+  top_p: 0.85
+  repetition_penalty: 1.15
+  seed: 42
+  deterministic: false
+class_names:
+- giant cell tumor
+- osteochondroma
+- osteofibroma
+- osteosarcoma
+- simple bone cyst
+- synovial osteochondroma
+questions:
+- lesion is predominantly lytic with areas of sclerosis?
+- cortical integrity shows thinning without breach?
+- periosteal reaction present as a smooth band around the lesion?
+- matrix appears ground-glass in appearance within the lesion?
+- bone contour demonstrates expansion with outward growth?
+- margin of the lesion has an ill-defined border?
+- trabeculae show destruction and disorganization?
+- intraosseous margins have a well-defined sclerotic rim?
+- soft tissue mass extends beyond the bony confines?
+- mixed lytic and sclerotic lesion with preserved trabecular pattern?
+classes:
+  giant cell tumor:
+    default_prompts:
+    - a bone X-ray image showing giant cell tumor
+    generated_descriptions:
+    - lesion located in the metaphysis, exhibiting a predominantly lytic pattern with
+      areas of sclerosis
+    - cortical integrity shows marked thinning but no breach
+    - periosteal reaction present as a smooth lamellar band surrounding the lesion
+    - matrix within the lesion displays a characteristic ground-glass appearance
+    - bone contour demonstrates expansive growth with outward bulging
+    - margin of the lesion has an indistinct border
+    - trabeculae appear destroyed and disorganized within the lesion
+    - soft tissue mass extends beyond the bony confines into adjacent soft tissues
+    metadata:
+      num_default: 1
+      num_generated: 8
+  osteochondroma:
+    default_prompts:
+    - a bone X-ray image showing osteochondroma
+    generated_descriptions:
+    - lesion located in the epiphysis with a mixed lytic and sclerotic pattern, demonstrating
+      thinning of the cortex without breach.
+    - cortical integrity shows expansion with a well-defined sclerotic rim at the
+      margin of the lesion.
+    - periosteal reaction present as a lamellated band surrounding the lesion.
+    - matrix within the lesion exhibits a ground-glass appearance indicative of cartilaginous
+      elements.
+    - bone contour demonstrates outward growth with preservation of the trabecular
+      pattern.
+    - trabeculae appear disorganized with evidence of destruction.
+    - soft tissue mass extends beyond the bony confines into the adjacent soft tissues.
+    - lesion presents with a geographic pattern involving both lytic and sclerotic
+      components.
+    metadata:
+      num_default: 1
+      num_generated: 8
+  osteofibroma:
+    default_prompts:
+    - a bone X-ray image showing osteofibroma
+    generated_descriptions:
+    - lesion located in the metaphysis, presenting as a mixed lytic and sclerotic
+      area with a well-defined sclerotic rim
+    - cortical thinning observed without breach in the diaphyseal region adjacent
+      to the lesion
+    - periosteal reaction noted as a smooth lamellar band surrounding the expansile
+      lytic lesion in the epiphysis
+    - matrix within the lesion exhibits a ground-glass appearance indicative of osteoblastic
+      activity
+    - trabeculae demonstrate disorganized patterns with destruction in the geographic-like
+      distribution of the lesion
+    - soft tissue extension beyond the bony confines forming a small mass in the vicinity
+      of the lytic-sclerotic lesion
+    - margin of the lesion displays an ill-defined border, suggesting potential aggressive
+      behavior
+    - bone contour shows outward expansion consistent with the expansive nature of
+      the lesion
+    metadata:
+      num_default: 1
+      num_generated: 8
+  osteosarcoma:
+    default_prompts:
+    - a bone X-ray image showing osteosarcoma
+    generated_descriptions:
+    - lesion located in the metaphysis, exhibiting a mixed lytic and sclerotic pattern
+      with preserved trabecular pattern
+    - cortical thinning observed without evidence of breach in the diaphyseal region
+    - periosteal reaction present as a lamellated band surrounding the expansive lesion
+      in the epiphysis
+    - matrix within the lesion displays a ground-glass appearance indicative of osteosarcoma
+    - bone contour demonstrates expansion with outward growth in the metaphyseal segment
+    - margin of the lesion exhibits an ill-defined border characteristic of osteosarcoma
+    - trabeculae appear destroyed and disorganized within the lytic area of the lesion
+    - soft tissue mass evident extending beyond the bony confines into adjacent soft
+      tissues
+    metadata:
+      num_default: 1
+      num_generated: 8
+  simple bone cyst:
+    default_prompts:
+    - a bone X-ray image showing simple bone cyst
+    generated_descriptions:
+    - lesion located in the metaphysis, predominantly lytic with areas of sclerotic
+      borders
+    - cortical thinning observed without breach in the diaphyseal region
+    - periosteal reaction present as a smooth lamellar band surrounding the lesion
+    - matrix within the lesion exhibits a ground-glass appearance
+    - bone contour demonstrates expansive growth with outward margin
+    - trabeculae show signs of destruction and disorganization
+    - intraosseous margins defined by a well-circumscribed sclerotic rim
+    - soft tissue mass not extending beyond the bony confines
+    metadata:
+      num_default: 1
+      num_generated: 8
+  synovial osteochondroma:
+    default_prompts:
+    - a bone X-ray image showing synovial osteochondroma
+    generated_descriptions:
+    - lesion located in the epiphysis with a mixed lytic and sclerotic pattern, showing
+      thinning of the cortex without breach, and a well-defined sclerotic rim at its
+      margin
+    - periosteal reaction present as a lamellated band surrounding a predominantly
+      lytic area with some sclerotic components
+    - matrix within the lesion exhibits a ground-glass appearance, indicative of cartilaginous
+      differentiation
+    - bone contour demonstrates marked expansion with outward growth, while trabeculae
+      appear disorganized and destroyed
+    - soft tissue mass extending beyond the bony confines, forming a distinct extra-skeletal
+      envelope
+    - lesion in the metaphysis characterized by a permeative lytic pattern with preserved
+      underlying trabecular architecture
+    - cortical integrity shows thinning but no breach, with the lesion having an ill-defined
+      margin that blends into adjacent normal bone
+    - trabecular pattern within the lesion is disrupted, with areas of both lytic
+      and sclerotic changes creating a moth-eaten appearance
+    metadata:
+      num_default: 1
+      num_generated: 8

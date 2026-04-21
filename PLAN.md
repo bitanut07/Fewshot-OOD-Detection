@@ -105,6 +105,16 @@ IMG<mã dữ liệu><số thứ tự ảnh 5 chữ số><mã đa dạng>
 ## LLM description generation
 - Đăng nhập và Hugging-Face: chạy lệnh `huggingface-cli login`
 
+#Liên hệ với Admin để lấy GPU hoặc tự cấu hình GPU Cloud của mình.
+
+Chạy lệnh dưới để bật server GPU Cloud:
 ssh -i ~/.ssh/id_ed25519 -p 33528 root@116.109.174.203
 
 scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/data/prompts/class_descriptions.json .
+
+Lệnh generate descriptions:
+python src/scripts/generate_llm_descriptions.py \
+    --config configs/experiment/exp_full_model.yaml \
+    --num_attributes 6 \    # Stage A: how many attributes
+    --num_descriptions 8 \  # Stage B: how many descriptions
+    --force

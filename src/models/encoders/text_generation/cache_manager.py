@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Cache manager for LLM-generated descriptions and questions.
 
-Handles persistence in the structured YAML/JSON schema required by the
-pipeline, including metadata for reproducibility.  Implements cache-first
-behaviour: load existing valid outputs unless ``force_regenerate`` is set.
+Handles persistence in the structured schema required by the pipeline,
+including metadata for reproducibility.  Supports the multi-stage generation
+output format with attributes and descriptions.
 """
 from __future__ import annotations
 
@@ -17,10 +17,12 @@ import yaml
 
 log = logging.getLogger(__name__)
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3  # Updated for multi-stage generation with attributes
 
 
-# ─── Public data helpers ────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Public data helpers
+# ─────────────────────────────────────────────────────────────────────────────
 
 def build_output_payload(
     *,
@@ -47,9 +49,36 @@ def build_output_payload(
 
 
 def build_class_entry(
+    *,
+    default_prompt: str,
+    attributes: List[str],
+    descriptions: List[str],
+) -> dict:
+    """Build a single class entry for the output schema.
+
+    Schema v3 structure:
+        default_prompt: str
+        attributes: List[str]  (discriminative attributes from Stage A)
+        descriptions: List[str]  (final CLIP descriptions from Stage B)
+        metadata: dict
+    """
+    return {
+        "default_prompt": default_prompt,
+        "attributes": attributes,
+        "descriptions": descriptions,
+        "metadata": {
+            "num_attributes": len(attributes),
+            "num_descriptions": len(descriptions),
+        },
+    }
+
+
+# Legacy compatibility helper
+def build_class_entry_legacy(
     default_prompts: List[str],
     generated_descriptions: List[str],
 ) -> dict:
+    """Legacy schema v2 format for backward compatibility."""
     return {
         "default_prompts": default_prompts,
         "generated_descriptions": generated_descriptions,
@@ -60,19 +89,14 @@ def build_class_entry(
     }
 
 
-# ─── Cache manager ──────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Cache manager
+# ─────────────────────────────────────────────────────────────────────────────
 
 class CacheManager:
     """Read / write / validate the structured description cache.
 
-    Parameters
-    ----------
-    descriptions_path:
-        Primary output — structured YAML with full schema.
-    questions_path:
-        Standalone questions file (kept for backward compat).
-    json_path:
-        Flat ``{class_name: [descriptions]}`` JSON consumed by glali code.
+    Supports both schema v3 (with attributes) and legacy v2 format.
     """
 
     def __init__(
@@ -85,7 +109,9 @@ class CacheManager:
         self.questions_path = Path(questions_path)
         self.json_path = Path(json_path) if json_path else None
 
-    # -- Existence checks -----------------------------------------------------
+    # ─────────────────────────────────────────────────────────────────────────
+    # Existence checks
+    # ─────────────────────────────────────────────────────────────────────────
 
     def questions_exist(self) -> bool:
         return self.questions_path.is_file()
@@ -93,14 +119,19 @@ class CacheManager:
     def descriptions_exist(self) -> bool:
         return self.descriptions_path.is_file()
 
-    def cache_valid(self, expected_classes: List[str], num_descriptions: int) -> bool:
-        """Return True if cache has all *expected_classes* with enough descriptions."""
+    def cache_valid(
+        self,
+        expected_classes: List[str],
+        num_descriptions: int,
+    ) -> bool:
+        """Return True if cache has all expected classes with enough descriptions."""
         if not self.descriptions_exist():
             return False
         try:
             data = self._load_yaml(self.descriptions_path)
         except Exception:
             return False
+
         if not isinstance(data, dict):
             return False
 
@@ -109,12 +140,23 @@ class CacheManager:
             entry = classes.get(cls)
             if entry is None:
                 return False
-            descs = entry.get("generated_descriptions", entry) if isinstance(entry, dict) else entry
+
+            # Support both v3 and v2 schemas
+            if isinstance(entry, dict):
+                descs = entry.get("descriptions") or entry.get("generated_descriptions", [])
+            elif isinstance(entry, list):
+                descs = entry
+            else:
+                return False
+
             if not isinstance(descs, list) or len(descs) < num_descriptions:
                 return False
+
         return True
 
-    # -- Load -----------------------------------------------------------------
+    # ─────────────────────────────────────────────────────────────────────────
+    # Load
+    # ─────────────────────────────────────────────────────────────────────────
 
     def load_questions(self) -> List[str]:
         if not self.questions_exist():
@@ -125,33 +167,67 @@ class CacheManager:
         return []
 
     def load_descriptions(self) -> dict:
-        """Load full structured payload (schema v2) or legacy flat dict."""
+        """Load full structured payload."""
         if not self.descriptions_exist():
             return {}
         return self._load_yaml(self.descriptions_path)
 
     def load_flat_descriptions(self) -> Dict[str, List[str]]:
-        """Return flat ``{class_name: [str, …]}`` regardless of schema version."""
+        """Return flat {class_name: [descriptions]} regardless of schema version."""
         data = self.load_descriptions()
         if not data:
             return {}
-        if data.get("schema_version") == SCHEMA_VERSION and "classes" in data:
-            flat: Dict[str, List[str]] = {}
-            for cls, entry in data["classes"].items():
-                descs = entry.get("generated_descriptions", [])
+
+        schema = data.get("schema_version", 1)
+        classes = data.get("classes", data)
+
+        flat: Dict[str, List[str]] = {}
+        for cls, entry in classes.items():
+            if isinstance(entry, dict):
+                # v3: descriptions, v2: generated_descriptions
+                descs = entry.get("descriptions") or entry.get("generated_descriptions", [])
                 flat[cls] = descs
-            return flat
-        # Legacy: the dict itself is flat
-        return {k: v for k, v in data.items() if isinstance(v, list)}
+            elif isinstance(entry, list):
+                flat[cls] = entry
+
+        return flat
+
+    def load_with_defaults(self) -> Dict[str, Dict[str, Any]]:
+        """Load structured data including default_prompt and attributes."""
+        data = self.load_descriptions()
+        if not data:
+            return {}
+
+        classes = data.get("classes", data)
+        result: Dict[str, Dict[str, Any]] = {}
+
+        for cls, entry in classes.items():
+            if isinstance(entry, dict):
+                result[cls] = {
+                    "default_prompt": entry.get("default_prompt")
+                                      or (entry.get("default_prompts", [""])[0] if entry.get("default_prompts") else ""),
+                    "attributes": entry.get("attributes", []),
+                    "descriptions": entry.get("descriptions") or entry.get("generated_descriptions", []),
+                }
+            elif isinstance(entry, list):
+                result[cls] = {
+                    "default_prompt": "",
+                    "attributes": [],
+                    "descriptions": entry,
+                }
+
+        return result
 
     def load_all(self) -> dict:
-        """Return dict with ``questions`` and ``descriptions`` keys."""
+        """Return dict with questions and descriptions."""
         return {
             "questions": self.load_questions(),
             "descriptions": self.load_flat_descriptions(),
         }
 
-    # -- Save -----------------------------------------------------------------
+    # ─────────────────────────────────────────────────────────────────────────
+    # Save
+    # ─────────────────────────────────────────────────────────────────────────
 
     def save_questions(self, questions: List[str]) -> None:
         self._ensure_dir(self.questions_path)
@@ -159,21 +235,23 @@ class CacheManager:
         log.info("Questions saved → %s (%d items)", self.questions_path, len(questions))
 
     def save_descriptions(self, payload: dict) -> None:
-        """Save the full structured payload (schema v2)."""
+        """Save the full structured payload."""
         self._ensure_dir(self.descriptions_path)
         self._save_yaml(self.descriptions_path, payload)
         log.info("Descriptions saved → %s", self.descriptions_path)
 
     def save_flat_json(self, flat: Dict[str, List[str]]) -> None:
-        """Save flat ``{class: [desc, …]}`` JSON for glali compatibility."""
+        """Save flat {class: [desc, …]} JSON for compatibility."""
         if self.json_path is None:
             return
         self._ensure_dir(self.json_path)
         with open(self.json_path, "w", encoding="utf-8") as f:
-            json.dump(flat, f, ensure_ascii=False)
+            json.dump(flat, f, ensure_ascii=False, indent=2)
         log.info("Flat JSON saved → %s", self.json_path)
 
-    # -- Internal helpers -----------------------------------------------------
+    # ─────────────────────────────────────────────────────────────────────────
+    # Internal helpers
+    # ─────────────────────────────────────────────────────────────────────────
 
     @staticmethod
     def _load_yaml(path: Path) -> Any:
