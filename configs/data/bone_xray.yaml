@@ -1,12 +1,12 @@
-# Bone X-Ray Dataset Configuration
+# Bone X-Ray Dataset Configuration (BTXRD + FracAtlas)
 dataset_type: "bone_xray"
 data:
   dataset_name: "bone_xray"
   data_root: "data/processed/bone_xray"
   image_dir: "images"
-  num_classes: 15
-  num_known_classes: 10
-  num_ood_classes: 5
+  num_classes: 8
+  num_known_classes: 6
+  num_ood_classes: 2
   image_size: 224
   image_mean: [0.485, 0.456, 0.406]
   image_std: [0.229, 0.224, 0.225]

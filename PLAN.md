@@ -104,3 +104,7 @@ IMG<mã dữ liệu><số thứ tự ảnh 5 chữ số><mã đa dạng>
 
 ## LLM description generation
 - Đăng nhập và Hugging-Face: chạy lệnh `huggingface-cli login`
+
+ssh -i ~/.ssh/id_ed25519 -p 33528 root@116.109.174.203
+
+scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/data/prompts/class_descriptions.json .

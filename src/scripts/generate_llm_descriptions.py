@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -143,7 +144,9 @@ def main():
 
     # Build LLM wrapper from config
     llm_cfg = cfg.model.llm
+    effective_cache_dir = llm_cfg.get("cache_dir") or os.getenv("HF_CACHE_DIR")
     _log(f"Initializing LLM wrapper with model={llm_cfg.get('model_name', 'Qwen/Qwen2.5-7B-Instruct')} ...")
+    _log(f"LLM cache_dir: {effective_cache_dir or 'default_hf_cache'}")
     llm = LLMWrapper(
         model_name=llm_cfg.get("model_name", "Qwen/Qwen2.5-7B-Instruct"),
         device_map=llm_cfg.get("device_map", "auto"),
@@ -151,7 +154,7 @@ def main():
         temperature=llm_cfg.get("temperature", 0.7),
         top_p=llm_cfg.get("top_p", 0.9),
         repetition_penalty=llm_cfg.get("repetition_penalty", 1.1),
-        cache_dir=llm_cfg.get("cache_dir"),
+        cache_dir=effective_cache_dir,
         torch_dtype=getattr(
             __import__("torch"),
             llm_cfg.get("torch_dtype", "float16"),
