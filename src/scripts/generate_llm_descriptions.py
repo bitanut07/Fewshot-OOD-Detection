@@ -1,20 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Generate LLM-based disease descriptions and questions for all classes.
+"""Generate LLM-based class descriptions for known ID classes.
 
-Run this script OFFLINE before training to generate:
-  1. Discriminative questions (shared across dataset)
-  2. Disease descriptions per class (guided by questions)
+Offline preprocessing step that produces:
+  1. Discriminative questions (dataset-level)
+  2. Visual descriptions per known class (guided by questions)
 
-Output is saved to:
-  - data/prompts/class_questions.yaml
-  - data/prompts/class_descriptions.yaml
+Outputs are saved in a structured schema (v2) consumed by the CLIP text
+encoder and text-refinement module during training.
+
+**Only known in-distribution (ID) classes receive generated text.**
+OOD detection relies on poor alignment with known-class embeddings.
+
+Usage:
+    python src/scripts/generate_llm_descriptions.py \\
+        --config configs/experiment/exp_full_model.yaml
+
+    # Force regeneration even if cache exists:
+    python src/scripts/generate_llm_descriptions.py \\
+        --config configs/experiment/exp_full_model.yaml --force
+
+    # Skip question step (reuse existing):
+    python src/scripts/generate_llm_descriptions.py \\
+        --config configs/experiment/exp_full_model.yaml --skip_questions
 """
-
 from __future__ import annotations
 
 import argparse
-import json
+import logging
 import os
 import sys
 import time
@@ -23,17 +36,25 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from src.utils.config import load_config
-from src.models.encoders.llm_wrapper import LLMWrapper
+from src.models.encoders.text_generation import (
+    LLMWrapper,
+    GenerationConfig,
+    HFLocalGenerator,
+    PromptBuilder,
+    OutputCleaner,
+    CacheManager,
+)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(levelname)s %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+log = logging.getLogger("generate_descriptions")
 
 
-def _log(msg: str) -> None:
-    """Lightweight timestamped logger for CLI progress tracking."""
-    ts = time.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[{ts}] {msg}")
-
-
-def _resolve_target_classes(cfg, override_class_names):
-    """Resolve classes to generate for, prioritizing CLI override."""
+def _resolve_id_classes(cfg, override_class_names):
+    """Resolve **known ID classes** only — never OOD classes."""
     if override_class_names:
         return override_class_names
 
@@ -47,195 +68,180 @@ def _resolve_target_classes(cfg, override_class_names):
 
     resolved = []
     for idx in id_classes:
-        if not isinstance(idx, int):
-            continue
-        if 0 <= idx < len(class_names):
+        if isinstance(idx, int) and 0 <= idx < len(class_names):
             resolved.append(class_names[idx])
     return resolved
 
 
-def _save_glali_like_json(descriptions: dict, output_path: str) -> None:
-    """Save flat class->descriptions JSON like glali/description/*.json."""
-    out = Path(output_path)
-    out.parent.mkdir(parents=True, exist_ok=True)
-    with open(out, "w", encoding="utf-8") as f:
-        json.dump(descriptions, f, ensure_ascii=False)
-    print(f"[main] Glali-like JSON saved to: {out}")
-
-
 def main():
-    start_time = time.time()
-    _log("Starting LLM description generation script.")
-
-    parser = argparse.ArgumentParser(description="Generate LLM disease descriptions and questions")
-    parser.add_argument("--config", type=str, required=True, help="Path to experiment config")
-    parser.add_argument(
-        "--class_names", type=str, nargs="+", default=None,
-        help="Override class names (default: from config)"
+    t0 = time.time()
+    parser = argparse.ArgumentParser(
+        description="Generate LLM descriptions for known ID classes"
     )
-    parser.add_argument(
-        "--skip_questions", action="store_true",
-        help="Skip question generation (use existing class_questions.yaml)"
-    )
-    parser.add_argument(
-        "--num_questions", type=int, default=None,
-        help="Override number of questions"
-    )
-    parser.add_argument(
-        "--num_descriptions", type=int, default=None,
-        help="Override number of descriptions per class"
-    )
-    parser.add_argument(
-        "--glali_json_out", type=str, default=None,
-        help="Optional output JSON path (flat {class_name: [descriptions]} format like glali)"
-    )
+    parser.add_argument("--config", type=str, required=True)
+    parser.add_argument("--class_names", type=str, nargs="+", default=None,
+                        help="Override known class names")
+    parser.add_argument("--skip_questions", action="store_true",
+                        help="Reuse existing questions file")
+    parser.add_argument("--force", action="store_true",
+                        help="Force regeneration even if valid cache exists")
+    parser.add_argument("--num_questions", type=int, default=None)
+    parser.add_argument("--num_descriptions", type=int, default=None)
+    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--deterministic", action="store_true")
     args = parser.parse_args()
-    _log(f"Arguments parsed. config={args.config}")
 
-    # Load merged config
-    _log("Loading merged configuration...")
+    # ── Load config ──────────────────────────────────────────────────────
+    log.info("Loading config: %s", args.config)
     cfg = load_config(args.config)
-    _log("Configuration loaded.")
 
-    # Class names (default to ID classes from config if available)
-    class_names = _resolve_target_classes(cfg, args.class_names)
+    # ── Resolve ID classes ───────────────────────────────────────────────
+    class_names = _resolve_id_classes(cfg, args.class_names)
     if not class_names:
-        print("Error: No class names. Set --class_names or config.data.class_names.")
-        return
-    _log(f"Resolved target classes: {len(class_names)}")
-    _log(f"Target class list: {class_names}")
+        log.error("No class names resolved.  Set --class_names or config.data.class_names.")
+        sys.exit(1)
+    log.info("Known ID classes (%d): %s", len(class_names), class_names)
 
-    # Number of outputs
-    num_q = args.num_questions or cfg.llm_descriptions.get("num_questions", 10)
-    num_d = args.num_descriptions or cfg.llm_descriptions.get("num_descriptions_per_class", 5)
-    _log(f"Generation targets: num_questions={num_q}, num_descriptions_per_class={num_d}")
+    # ── Parameters ───────────────────────────────────────────────────────
+    llm_cfg = cfg.model.llm
+    desc_cfg = cfg.llm_descriptions
 
-    # Output paths
-    questions_out = cfg.llm_descriptions.get("questions_output_file", "data/prompts/class_questions.yaml")
-    descriptions_out = cfg.llm_descriptions.get("output_file", "data/prompts/class_descriptions.yaml")
-    glali_json_out = (
-        args.glali_json_out
-        or cfg.llm_descriptions.get("glali_output_file")
-        or cfg.llm_descriptions.get("descriptions_json_file")
+    num_q = args.num_questions or desc_cfg.get("num_questions", 10)
+    num_d = args.num_descriptions or desc_cfg.get("num_descriptions_per_class", 8)
+    seed = args.seed if args.seed is not None else llm_cfg.get("seed", 42)
+    deterministic = args.deterministic or llm_cfg.get("deterministic", False)
+
+    log.info("Generation targets: questions=%d, descriptions_per_class=%d", num_q, num_d)
+    log.info("Seed=%s, deterministic=%s", seed, deterministic)
+
+    # ── Output paths ─────────────────────────────────────────────────────
+    questions_out = desc_cfg.get("questions_output_file", "data/prompts/class_questions.yaml")
+    descriptions_out = desc_cfg.get("output_file", "data/prompts/class_descriptions.yaml")
+    json_out = (
+        desc_cfg.get("glali_output_file")
         or str(Path(descriptions_out).with_suffix(".json"))
     )
-    _log(f"Output files: questions={questions_out}, yaml={descriptions_out}, json={glali_json_out}")
 
-    # Dataset description (from config, or fallback to inline)
-    dataset_desc = cfg.llm_descriptions.get(
+    # ── Dataset description (no OOD class names) ─────────────────────────
+    dataset_desc = desc_cfg.get(
         "dataset_description",
-        "A bone X-ray dataset with multiple bone condition classes."
+        "A bone X-ray image dataset for few-shot classification of bone tumors."
     )
-    # Allow lightweight templating in config strings, e.g. "{num_classes}".
     try:
         dataset_desc = dataset_desc.format(num_classes=len(class_names))
     except Exception:
-        # Keep original string if it contains other braces/placeholders.
         pass
 
-    # Prompt templates from config (if provided)
-    question_prompt = cfg.llm_descriptions.get("question_prompt_template")
-    desc_prompt = cfg.llm_descriptions.get("description_prompt_template")
-    _log(
-        "Prompt templates: "
-        f"question={'custom' if question_prompt else 'default'}, "
-        f"description={'custom' if desc_prompt else 'default'}"
+    # ── Build components ─────────────────────────────────────────────────
+    gen_config = GenerationConfig(
+        max_new_tokens=llm_cfg.get("max_new_tokens", 512),
+        temperature=llm_cfg.get("temperature", 0.3),
+        top_p=llm_cfg.get("top_p", 0.85),
+        repetition_penalty=llm_cfg.get("repetition_penalty", 1.15),
+        seed=seed,
+        deterministic=deterministic,
     )
 
-    # Build LLM wrapper from config
-    llm_cfg = cfg.model.llm
     effective_cache_dir = llm_cfg.get("cache_dir") or os.getenv("HF_CACHE_DIR")
-    _log(f"Initializing LLM wrapper with model={llm_cfg.get('model_name', 'Qwen/Qwen2.5-7B-Instruct')} ...")
-    _log(f"LLM cache_dir: {effective_cache_dir or 'default_hf_cache'}")
-    llm = LLMWrapper(
-        model_name=llm_cfg.get("model_name", "Qwen/Qwen2.5-7B-Instruct"),
+
+    generator = HFLocalGenerator(
+        model_name_or_path=llm_cfg.get("model_name", "Qwen/Qwen2.5-7B-Instruct"),
         device_map=llm_cfg.get("device_map", "auto"),
-        max_new_tokens=llm_cfg.get("max_new_tokens", 512),
-        temperature=llm_cfg.get("temperature", 0.7),
-        top_p=llm_cfg.get("top_p", 0.9),
-        repetition_penalty=llm_cfg.get("repetition_penalty", 1.1),
+        torch_dtype=llm_cfg.get("torch_dtype", "float16"),
         cache_dir=effective_cache_dir,
-        torch_dtype=getattr(
-            __import__("torch"),
-            llm_cfg.get("torch_dtype", "float16"),
-        ),
         trust_remote_code=llm_cfg.get("trust_remote_code", True),
     )
-    _log("LLM wrapper initialized. Model weights will be loaded lazily on first generation call.")
 
-    # -------------------------------------------------------------------
-    # Step 1: Generate questions
-    # -------------------------------------------------------------------
-    step1_start = time.time()
-    if args.skip_questions:
-        import yaml
-        questions_path = Path(questions_out)
-        if questions_path.exists():
-            _log(f"Step 1/3: Loading existing questions from {questions_out} ...")
-            with open(questions_path) as f:
-                data = yaml.safe_load(f) or {}
-            questions = data.get("questions", [])
-            _log(f"Loaded {len(questions)} existing questions from {questions_out}")
-        else:
-            _log(f"Warning: --skip_questions but {questions_out} not found. Generating new questions...")
-            questions = llm.generate_questions(
-                dataset_description=dataset_desc,
-                num_questions=num_q,
-                prompt_template=question_prompt,
-            )
+    prompt_builder = PromptBuilder(
+        dataset_description=dataset_desc,
+        question_prompt_template=desc_cfg.get("question_prompt_template"),
+        description_prompt_template=desc_cfg.get("description_prompt_template"),
+    )
+
+    cache = CacheManager(
+        descriptions_path=descriptions_out,
+        questions_path=questions_out,
+        json_path=json_out,
+    )
+
+    llm = LLMWrapper(
+        generator=generator,
+        generation_config=gen_config,
+        prompt_builder=prompt_builder,
+        cache_manager=cache,
+        max_retries=3,
+    )
+
+    # ── Cache-first check ────────────────────────────────────────────────
+    if not args.force and cache.cache_valid(class_names, num_d):
+        log.info("Valid cache found — skipping generation.")
+        log.info("  Questions: %s", questions_out)
+        log.info("  Descriptions: %s", descriptions_out)
+        log.info("  JSON: %s", json_out)
+        log.info("Use --force to regenerate.")
+        return
+
+    # ── Step 1: Questions ────────────────────────────────────────────────
+    step1_t = time.time()
+    if args.skip_questions and cache.questions_exist():
+        questions = cache.load_questions()
+        log.info("Loaded %d existing questions from %s", len(questions), questions_out)
     else:
-        _log(f"Step 1/3: Generating {num_q} discriminative questions...")
-        questions = llm.generate_questions(
-            dataset_description=dataset_desc,
-            num_questions=num_q,
-            prompt_template=question_prompt,
-        )
-        _log(f"Generated {len(questions)} questions:")
+        log.info("Generating %d discriminative questions …", num_q)
+        questions = llm.generate_questions(num_q)
+        cache.save_questions(questions)
+        log.info("Generated %d questions in %.1fs", len(questions), time.time() - step1_t)
         for q in questions:
-            print(f"  - {q}")
-        llm.save_questions(questions, questions_out)
-        _log(f"Saved questions to {questions_out}")
-    _log(f"Step 1/3 completed in {time.time() - step1_start:.1f}s.")
+            log.info("  Q: %s", q)
 
-    # -------------------------------------------------------------------
-    # Step 2: Generate descriptions per class
-    # -------------------------------------------------------------------
-    step2_start = time.time()
-    _log(f"Step 2/3: Generating {num_d} descriptions per class for {len(class_names)} classes...")
-    descriptions: dict = {}
-    for idx, cls_name in enumerate(class_names, start=1):
-        class_start = time.time()
-        _log(f"[Class {idx}/{len(class_names)}] Generating descriptions for '{cls_name}' ...")
-        descs = llm.generate_descriptions(
-            class_name=cls_name,
-            num_descriptions=num_d,
-            dataset_description=dataset_desc,
-            questions=questions,
-            prompt_template=desc_prompt,
+    # ── Step 2: Per-class descriptions (ID only) ─────────────────────────
+    step2_t = time.time()
+    log.info("Generating %d descriptions × %d known classes …", num_d, len(class_names))
+
+    from src.models.encoders.text_generation.cache_manager import (
+        build_class_entry,
+        build_output_payload,
+    )
+
+    classes_data = {}
+    flat = {}
+    for idx, cls_name in enumerate(class_names, 1):
+        cls_t = time.time()
+        log.info("[%d/%d] '%s' …", idx, len(class_names), cls_name)
+        descs = llm.generate_descriptions(cls_name, num_d, questions)
+        default_prompt = prompt_builder.default_prompt(cls_name)
+        classes_data[cls_name] = build_class_entry(
+            default_prompts=[default_prompt],
+            generated_descriptions=descs,
         )
-        descriptions[cls_name] = descs
-        _log(
-            f"[Class {idx}/{len(class_names)}] Done '{cls_name}': "
-            f"{len(descs)} descriptions in {time.time() - class_start:.1f}s."
+        flat[cls_name] = descs
+        log.info(
+            "[%d/%d] '%s' → %d descriptions (%.1fs)",
+            idx, len(class_names), cls_name, len(descs), time.time() - cls_t,
         )
-        print(f"[main]   -> {len(descs)} descriptions:")
         for d in descs:
-            print(f"      {d}")
-    _log(f"Step 2/3 completed in {time.time() - step2_start:.1f}s.")
+            log.info("    • %s", d)
 
-    # -------------------------------------------------------------------
-    # Step 3: Save descriptions
-    # -------------------------------------------------------------------
-    step3_start = time.time()
-    _log("Step 3/3: Saving generated description files...")
-    llm.save_descriptions(descriptions, descriptions_out)
-    _save_glali_like_json(descriptions, glali_json_out)
-    _log(f"Step 3/3 completed in {time.time() - step3_start:.1f}s.")
+    log.info("Step 2 completed in %.1fs", time.time() - step2_t)
 
-    _log(f"Done! Total runtime: {time.time() - start_time:.1f}s.")
-    print(f"[main] Questions:       {questions_out}")
-    print(f"[main] Descriptions:    {descriptions_out}")
-    print(f"[main] Glali JSON:      {glali_json_out}")
+    # ── Step 3: Save ─────────────────────────────────────────────────────
+    dataset_name = cfg.data.get("dataset_name", "bone_xray")
+    payload = build_output_payload(
+        dataset_name=dataset_name,
+        model_name=generator.model_name(),
+        seed=seed,
+        generation_config=gen_config.as_dict(),
+        class_names=class_names,
+        questions=questions,
+        classes=classes_data,
+    )
+    cache.save_descriptions(payload)
+    cache.save_flat_json(flat)
+
+    log.info("Done in %.1fs", time.time() - t0)
+    log.info("  Questions:    %s", questions_out)
+    log.info("  Descriptions: %s", descriptions_out)
+    log.info("  Flat JSON:    %s", json_out)
 
 
 if __name__ == "__main__":

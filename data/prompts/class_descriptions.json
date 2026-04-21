@@ -1,2 +1,44 @@
-{"giant cell tumor": ["lesions demonstrate expansive, well-defined lytic areas with smooth margins.", "cortical thinning and scalloped appearance are evident around the lesion.", "trabeculae show increased spacing and irregular patterns within the affected area.", "bone density is significantly reduced within the lesion, while surrounding bone remains intact.", "adjacent soft tissues display a mass-like shadow indicative of extra-skeletal extension."], "osteochondroma": ["osteochondral mass projecting from the metaphysis with a pedunculated base and a cartilaginous cap", "cortical thinning and scalloping observed at the margin of the osteochondroma", "lesion exhibits a mixed appearance with both radiolucent and radiopaque components", "trabeculae show a characteristic \"popcorn\" pattern within the osteochondroma", "angular deformity of the diaphyseal region secondary to the growing osteochondroma"], "osteofibroma": ["bone structure maintains intact continuity with no apparent discontinuities", "lesion presents as a well-defined, round radiolucency with sharp margins", "cortical disruption evidenced by areas of thinning and scalloped appearance", "trabecular pattern shows patchy osteopenia with preserved architecture", "abnormal growth is noted as a small, oval, cortically based mass adjacent to the diaphysis"], "osteosarcoma": ["lesions exhibit extensive lytic changes with sharp, well-defined margins.", "cortical disruption presents as scalloped defects along the diaphysis.", "fracture lines demonstrate intersecting patterns indicative of pathological origin.", "abnormal growths appear as ill-defined soft tissue masses adjacent to the femur.", "trabecular pattern shows diffuse coarsening and increased spacing."], "simple bone cyst": ["lesions exhibit well-defined, rounded radiolucent areas with smooth margins.", "cortical thinning and scalloping are evident around the affected bone region.", "trabeculae show decreased density within the lesion area.", "bone structure maintains uniform appearance without apparent discontinuities.", "fracture lines are not visible; instead, there is a region of generalized bone density reduction."], 
-"synovial osteochondroma": ["bone structure remains intact with no apparent discontinuities", "lesion exhibits a pedunculated mass projecting from the articular surface", "cortical disruption with scalloped margins observed around the lesion", "trabeculae show characteristic parallel alignment perpendicular to the lesion base", "bilateral cupping of metaphyseal regions with surrounding sclerosis"]}
+{
+    "giant cell tumor": [
+        "lesions demonstrate expansive, well-defined lytic areas with smooth margins.",
+        "cortical thinning and scalloped appearance are evident around the lesion.",
+        "trabeculae show increased spacing and irregular patterns within the affected area.",
+        "bone density is significantly reduced within the lesion, while surrounding bone remains intact.",
+        "adjacent soft tissues display a mass-like shadow indicative of extra-skeletal extension."
+    ],
+    "osteochondroma": [
+        "osteochondral mass projecting from the metaphysis with a pedunculated base and a cartilaginous cap",
+        "cortical thinning and scalloping observed at the margin of the osteochondroma",
+        "lesion exhibits a mixed appearance with both radiolucent and radiopaque components",
+        "trabeculae show a characteristic \"popcorn\" pattern within the osteochondroma",
+        "angular deformity of the diaphyseal region secondary to the growing osteochondroma"
+    ],
+    "osteofibroma": [
+        "bone structure maintains intact continuity with no apparent discontinuities",
+        "lesion presents as a well-defined, round radiolucency with sharp margins",
+        "cortical disruption evidenced by areas of thinning and scalloped appearance",
+        "trabecular pattern shows patchy osteopenia with preserved architecture",
+        "abnormal growth is noted as a small, oval, cortically based mass adjacent to the diaphysis"
+    ],
+    "osteosarcoma": [
+        "lesions exhibit extensive lytic changes with sharp, well-defined margins.",
+        "cortical disruption presents as scalloped defects along the diaphysis.",
+        "fracture lines demonstrate intersecting patterns indicative of pathological origin.",
+        "abnormal growths appear as ill-defined soft tissue masses adjacent to the femur.",
+        "trabecular pattern shows diffuse coarsening and increased spacing."
+    ],
+    "simple bone cyst": [
+        "lesions exhibit well-defined, rounded radiolucent areas with smooth margins.",
+        "cortical thinning and scalloping are evident around the affected bone region.",
+        "trabeculae show decreased density within the lesion area.",
+        "bone structure maintains uniform appearance without apparent discontinuities.",
+        "fracture lines are not visible; instead, there is a region of generalized bone density reduction."
+    ],
+    "synovial osteochondroma": [
+        "bone structure remains intact with no apparent discontinuities",
+        "lesion exhibits a pedunculated mass projecting from the articular surface",
+        "cortical disruption with scalloped margins observed around the lesion",
+        "trabeculae show characteristic parallel alignment perpendicular to the lesion base",
+        "bilateral cupping of metaphyseal regions with surrounding sclerosis"
+    ]
+}
