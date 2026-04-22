@@ -115,9 +115,9 @@ def main():
     llm_cfg = cfg.model.llm
     desc_cfg = cfg.llm_descriptions
 
-    num_q = args.num_questions or desc_cfg.get("num_questions", 10)
-    num_a = args.num_attributes or desc_cfg.get("num_attributes_per_class", 6)
-    num_d = args.num_descriptions or desc_cfg.get("num_descriptions_per_class", 8)
+    num_q = args.num_questions if args.num_questions is not None else desc_cfg.get("num_questions", 10)
+    num_a = args.num_attributes if args.num_attributes is not None else desc_cfg.get("num_attributes_per_class", 8)
+    num_d = args.num_descriptions if args.num_descriptions is not None else desc_cfg.get("num_descriptions_per_class", 30)
     seed = args.seed if args.seed is not None else llm_cfg.get("seed", 42)
     deterministic = args.deterministic or llm_cfg.get("deterministic", False)
 

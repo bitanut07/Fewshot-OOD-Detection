@@ -121,9 +121,9 @@ class OutputCleaner:
     def __init__(
         self,
         min_length: int = 25,
-        max_length: int = 200,
+        max_length: int = 320,
         min_words: int = 5,
-        max_words: int = 30,
+        max_words: int = 45,
         near_dup_threshold: float = 0.80,
         require_domain_keyword: bool = True,
         min_domain_keywords: int = 2,
