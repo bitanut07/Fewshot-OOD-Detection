@@ -4,6 +4,7 @@ import yaml
 import requests
 from pathlib import Path
 import zipfile
+import shutil
 
 
 API_BASE = "https://api.figshare.com/v2"
@@ -108,6 +109,53 @@ def unzip_file(zip_path: Path, extract_to: Path):
     print(f"[UNZIP] Extracted to: {extract_to}")
 
 
+def _is_safe_to_flatten(parent: Path, child: Path) -> bool:
+    """Only flatten when nested folder is a simple wrapper directory."""
+    if not child.is_dir():
+        return False
+
+    child_items = list(child.iterdir())
+    parent_items = [p for p in parent.iterdir() if p != child]
+    child_names = {p.name for p in child_items}
+    parent_names = {p.name for p in parent_items}
+
+    # Avoid accidental overwrite when moving files up one level.
+    return len(child_items) > 0 and child_names.isdisjoint(parent_names)
+
+
+def flatten_single_outer_folder(extract_to: Path):
+    """
+    If zip extracted into a single wrapper folder, move its contents up.
+    Example: data/raw/BTXRD/BTXRD/{images,Annotations,dataset.csv}
+          -> data/raw/BTXRD/{images,Annotations,dataset.csv}
+    """
+    items = [p for p in extract_to.iterdir()]
+    if len(items) != 1:
+        print("[CLEANUP] Skip flatten: not a single outer folder.")
+        return
+
+    outer = items[0]
+    if not _is_safe_to_flatten(extract_to, outer):
+        print("[CLEANUP] Skip flatten: unsafe or nothing to move.")
+        return
+
+    print(f"[CLEANUP] Flatten outer folder: {outer}")
+    for child in outer.iterdir():
+        target = extract_to / child.name
+        shutil.move(str(child), str(target))
+    outer.rmdir()
+    print("[CLEANUP] Outer folder removed.")
+
+
+def remove_zip_if_unused(zip_path: Path):
+    if not zip_path.exists():
+        print("[CLEANUP] Zip already removed.")
+        return
+
+    zip_path.unlink()
+    print(f"[CLEANUP] Removed zip file: {zip_path}")
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python scripts/download_dataset.py <config.yaml>")
@@ -146,6 +194,8 @@ def main():
         unzip_dir = output_dir
         unzip_dir.mkdir(parents=True, exist_ok=True)
         unzip_file(output_path, unzip_dir)
+        flatten_single_outer_folder(unzip_dir)
+        remove_zip_if_unused(output_path)
 
     print("Done.")
 
