@@ -107,7 +107,17 @@ def _candidate_cache_paths() -> List[Path]:
     add("~/.cache/huggingface")
     add("/root/.cache/huggingface")  # cloud boxes often run as root
 
-    # Accelerate / datasets side-caches (usually small but just in case)
+    # Common cloud-provider pre-set locations (vast.ai, runpod, lambda, ...)
+    add("/workspace/.hf_home")
+    add("/workspace/.cache/huggingface")
+    add("/workspace/huggingface")
+    add("/data/.cache/huggingface")
+
+    # KaggleHub cache (can be 1-2 GB after dataset downloads)
+    add("~/.cache/kagglehub")
+    add("/root/.cache/kagglehub")
+
+    # Accelerate / torch / datasets side-caches
     add("~/.cache/torch/hub")
     add("/root/.cache/torch/hub")
 
