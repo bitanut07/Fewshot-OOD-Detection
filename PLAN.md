@@ -322,6 +322,20 @@ File: `src/losses/total_loss.py`
 
 ## Lệnh chạy
 
+### Update mới đã làm (liên quan train pipeline)
+- Bổ sung `src/scripts/download_dataset.py` hỗ trợ 2 nguồn:
+  - `source: figshare` (download `.zip` từ DOI)
+  - `source: kaggle` (qua `kagglehub.dataset_download`)
+- Thêm cleanup tự động sau tải:
+  - unzip xong thì tự flatten lớp thư mục bọc ngoài (nếu có),
+  - tự xóa file `.zip` sau khi giải nén thành công.
+- Chuẩn hóa config tải dataset để khớp pipeline parse/train:
+  - `configs/data/download_btxrd.yaml` -> dữ liệu về `data/raw/BTXRD`.
+  - `configs/data/download_fracatlas.yaml` -> dữ liệu về `data/raw/FracAtlas`.
+  - Có `kaggle_subpath` để tránh lỗi lồng thư mục kiểu `data/raw/.../...`.
+- Cải thiện thông báo lỗi config:
+  - nếu YAML thiếu key top-level `dataset`, script báo lỗi rõ ràng thay vì `KeyError`.
+
 ### Train + test một lượt
 ```bash
 python src/scripts/train_fsl.py \
@@ -348,6 +362,24 @@ python src/scripts/train_fsl.py \
 python src/scripts/train_fsl.py \
   --config configs/experiment/exp_full_model.yaml \
   --eval-only --do-test
+```
+
+### Câu lệnh chạy full pipeline (khuyến nghị hiện tại)
+```bash
+# 1) Download raw datasets (KaggleHub)
+python src/scripts/download_dataset.py configs/data/download_btxrd.yaml
+python src/scripts/download_dataset.py configs/data/download_fracatlas.yaml
+
+# 2) Parse từng nguồn
+python src/scripts/parse_btxrd.py
+python src/scripts/parse_fracatlas.py
+
+# 3) Merge + split + tạo manifest/split files
+python src/scripts/splits_dataset.py
+python src/scripts/build_fewshot_split.py --config configs/data/splits_data.yaml
+
+# 4) Train + test
+python src/scripts/train_fsl.py --config configs/experiment/exp_full_model.yaml --do-test
 ```
 
 ## Mapping logic với glali

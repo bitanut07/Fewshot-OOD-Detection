@@ -55,6 +55,27 @@ def _ensure_logits(logits: torch.Tensor) -> torch.Tensor:
     return logits.mean(dim=1) if logits.dim() == 3 else logits
 
 
+def _remap_train_labels(labels: torch.Tensor, config: Any) -> torch.Tensor:
+    """Map original class indices to contiguous ID indices when needed."""
+    id_classes = _get(config, "data", "id_classes", default=None)
+    if not id_classes:
+        return labels
+
+    id_classes = [int(x) for x in id_classes]
+    remap = {orig: i for i, orig in enumerate(id_classes)}
+    mapped = torch.full_like(labels, -1)
+    for orig, new in remap.items():
+        mapped[labels == orig] = new
+
+    if torch.any(mapped < 0):
+        bad = torch.unique(labels[mapped < 0]).detach().cpu().tolist()
+        raise ValueError(
+            f"Train labels contain indices not in data.id_classes: {bad}. "
+            "This causes CUDA device-side assert in CrossEntropy."
+        )
+    return mapped
+
+
 def train(
     model: nn.Module,
     train_loader: DataLoader,
@@ -127,11 +148,12 @@ def train(
 
         images = images.to(device, non_blocking=True)
         labels = labels.to(device, non_blocking=True)
+        train_labels = _remap_train_labels(labels, config)
 
         optimizer.zero_grad(set_to_none=True)
 
         with autocast(device_type=device.type, enabled=use_amp):
-            out = model(images, return_loss=True, labels=labels)
+            out = model(images, return_loss=True, labels=train_labels)
             logits = out["logits"]                           # [B, C]
             local_logits = out.get("local_logits")            # [B, P, C] or None
             global_feat = out.get("global_feat")
@@ -141,25 +163,25 @@ def train(
             loss_contrastive = out.get("loss_contrastive")
 
             # (1) classification loss on combined logits
-            loss_cls = loss_fn(logits, labels)
+            loss_cls = loss_fn(logits, train_labels)
 
             # (2) local-only classification loss (glali loss_id2)
             loss_la: Optional[torch.Tensor] = None
             if local_logits is not None:
-                loss_la = F.cross_entropy(local_logits.mean(dim=1), labels)
+                loss_la = F.cross_entropy(local_logits.mean(dim=1), train_labels)
 
             # (3) global alignment (image <-> text embeddings)
             loss_ga: Optional[torch.Tensor] = None
             if global_feat is not None and text_for_align is not None:
                 try:
-                    loss_ga = ga_fn(global_feat, text_for_align, labels)
+                    loss_ga = ga_fn(global_feat, text_for_align, train_labels)
                 except Exception:  # noqa: BLE001
                     loss_ga = None
 
             # (4) OOD entropy regularization (glali entropy_select_topk)
             loss_ood_reg: Optional[torch.Tensor] = None
             if local_logits is not None:
-                loss_ood_reg = entropy_select_topk(local_logits, labels, top_k=ood_topk)
+                loss_ood_reg = entropy_select_topk(local_logits, train_labels, top_k=ood_topk)
 
             # (5) teacher/student distillation on global image features
             loss_distil_img: Optional[torch.Tensor] = None
@@ -207,8 +229,8 @@ def train(
         # Metrics
         with torch.no_grad():
             preds = logits.argmax(dim=1)
-            correct = (preds == labels).sum().item()
-            total = labels.size(0)
+            correct = (preds == train_labels).sum().item()
+            total = train_labels.size(0)
         running["loss"] += float(loss.detach().item())
         running["loss_cls"] += float(loss_cls.detach().item())
         running["correct"] += correct
