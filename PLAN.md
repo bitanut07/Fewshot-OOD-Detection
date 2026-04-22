@@ -403,3 +403,212 @@ python src/scripts/train_fsl.py --config configs/experiment/exp_full_model.yaml 
   update, checkpoint ghi ra `outputs/runs/full_model/checkpoints/`.
 - Test stage với 3 OOD methods (msp/glmcm/local_mcm): ✅ trả về
   AUROC/AUPR/FPR cho từng method.
+
+# Bug fix đã xử lý trong lúc chạy thực tế trên GPU
+
+## CUDA `device-side assert triggered` khi train
+Lỗi gốc: `GlobalAlignmentLoss` đang `mean(dim=1)` text 3D `[B, C, D]` rồi
+`matmul` → logits `[B, B]`. Khi `num_classes > batch_size` (few-shot chỉ
+có 6 mẫu train), class label (vd `5`) vượt ngoài số cột `B` → CrossEntropy
+assert phía CUDA. Lỗi bị `try/except` âm thầm nuốt nên lan sang op kế
+tiếp (`softmax` trong `entropy_select_topk`) mới crash.
+
+Đã fix:
+- `src/losses/alignment_loss.py::GlobalAlignmentLoss`:
+  - Nhận đúng text 3D → tính per-sample cosine → logits `[B, num_classes]`.
+  - Thêm CPU-side check label range, báo rõ nếu sai shape thay vì assert CUDA.
+- `src/losses/total_loss.py::entropy_select_topk`:
+  - Check labels nằm trong `[0, C)` trước khi softmax/topk.
+- `src/trainer/train.py`:
+  - Thêm `_remap_train_labels(...)` map label gốc → chỉ số liên tục theo
+    `data.id_classes` (tránh out-of-range khi config `id_classes` không
+    liên tục).
+  - Bỏ `try/except Exception` bọc `ga_fn(...)` để lỗi không bị che.
+
+# Eval standalone (GLOCAL-FSL-OOD)
+
+## Script mới: `src/scripts/eval_ood.py`
+Hoàn chỉnh lại từ script cũ (dùng API đã biến mất). Giờ:
+- Load config + optional `--override`, set seed, chọn GPU.
+- Build **ID test loader** bằng cùng stratified split với `train_fsl.py`
+  (chung seed) → cùng tập test như lúc train.
+- Build **OOD loader** từ `mode="ood"` của `BoneXRayDataset`
+  (có thể tắt bằng `--no-ood`).
+- Dựng `GLocalFSLOODModel` + `load_checkpoint(...)` từ file `.pt`.
+- Gọi `src/trainer/test.test(...)` để tính:
+  - ID classification: `accuracy, precision, recall, f1_score, auroc`.
+  - OOD detection song song 3 phương pháp: `msp`, `glmcm`, `local_mcm`
+    với `AUROC / AUPR-In / AUPR-Out / FPR@95`.
+- In kết quả gọn ra stdout, dump JSON đầy đủ ra
+  `outputs/eval/<experiment_name>.json` (hoặc path qua `--save-json`).
+
+Flags chính:
+- `--config` (bắt buộc) — experiment YAML
+- `--override` — override YAML
+- `--checkpoint` (bắt buộc) — file `.pt`
+- `--gpu` — index GPU (default 0)
+- `--batch-size` — override batch size eval
+- `--temperature` — softmax temperature cho OOD scoring
+- `--no-ood` — chỉ eval ID classification
+- `--save-json` — đường dẫn lưu kết quả
+
+Ví dụ lệnh:
+```bash
+# Eval chuẩn bằng best checkpoint
+python src/scripts/eval_ood.py \
+  --config configs/experiment/exp_full_model.yaml \
+  --checkpoint outputs/runs/full_model/checkpoints/best.pt
+
+# Chỉ ID classification, không OOD
+python src/scripts/eval_ood.py \
+  --config configs/experiment/exp_full_model.yaml \
+  --checkpoint outputs/runs/full_model/checkpoints/best.pt \
+  --no-ood
+
+# Tuning temperature cho OOD scoring
+python src/scripts/eval_ood.py \
+  --config configs/experiment/exp_full_model.yaml \
+  --checkpoint outputs/runs/full_model/checkpoints/best.pt \
+  --temperature 0.5
+
+# Lưu JSON tùy chọn đường dẫn
+python src/scripts/eval_ood.py \
+  --config configs/experiment/exp_full_model.yaml \
+  --checkpoint outputs/runs/full_model/checkpoints/best.pt \
+  --save-json outputs/eval/full_model_t0.5.json
+```
+
+## Quan hệ với các module eval đã có
+| Đang dùng ở đâu                              | Vai trò                                                           |
+| -------------------------------------------- | ----------------------------------------------------------------- |
+| `src/trainer/validate.py::validate`          | Validate giữa epoch khi train (ID metrics + MSP sanity check)     |
+| `src/trainer/test.py::test`                  | Test cuối run trong `Trainer.test()`, cũng dùng lại trong script  |
+| `src/scripts/eval_ood.py`                    | Eval standalone (không cần train), đọc checkpoint + in/save JSON  |
+
+# LLM disk-optimization cho GPU cloud (~32GB disk)
+
+## Bối cảnh
+- Node GPU thuê thường chỉ ~32GB disk.
+- Qwen-7B FP16 ≈ 15GB → nếu HF cache mặc định (`~/.cache/huggingface`) thì
+  disk hết chỗ, không ghi được checkpoint, I/O chậm, train crash.
+- LLM chỉ dùng **một lần** để sinh description, không tham gia training.
+
+## Thay đổi đã làm
+
+### 1. Redirect HF cache sang `/tmp`
+File mới: `src/models/encoders/text_generation/hf_env.py`
+- `setup_hf_cache(path=None)` — set `HF_HOME`, `HF_HUB_CACHE`,
+  `HUGGINGFACE_HUB_CACHE`, `TRANSFORMERS_CACHE` về `path`
+  (default `/tmp/hf-cache-fewshot-ood`). **Idempotent**, gọi bao nhiêu lần
+  cũng được.
+- `cleanup_hf_cache(path=None)` — xoá toàn bộ cache, trả về MB đã free.
+- `cleanup_model_cache(model_id, path=None)` — xoá cache 1 model cụ thể.
+- `hf_local_generator.py` gọi `setup_hf_cache()` **ngay đầu file**, trước
+  `from transformers import ...`, nên mọi đường đi import đều auto-redirect.
+
+### 2. Quantization + low-memory load
+`src/models/encoders/text_generation/hf_local_generator.py`:
+- Thêm `quantization: "4bit" | "8bit" | None` (qua `BitsAndBytesConfig`,
+  `nf4` + double-quant cho 4-bit).
+- Mặc định `low_cpu_mem_usage=True`, `device_map="auto"` — Accelerate stream
+  weight thẳng sang GPU, không cần full copy trên CPU.
+- Method `unload(delete_cache=None)`:
+  - `.to("cpu")` model, `del` + `gc.collect()` + `torch.cuda.empty_cache()`,
+  - tuỳ chọn xoá cache trên disk.
+- Hỗ trợ context manager (`with HFLocalGenerator(...) as gen:`).
+
+### 3. API backend (zero disk)
+File mới: `src/models/encoders/text_generation/api_generator.py`
+- `APITextGenerator(provider, model_name, api_key_env, base_url, ...)`.
+- Provider: `openai`, `anthropic`, `openai-compatible` (vLLM/Groq/Together).
+- Dùng SDK nếu có (`openai`, `anthropic`), fallback raw `requests` POST.
+- API key đọc từ env var → **không commit key vào repo**.
+- Không tải weight nào → 0 MB disk, 0 MB VRAM LLM.
+
+### 4. Factory chọn backend
+File mới: `src/models/encoders/text_generation/factory.py`
+- `build_generator(llm_cfg)` đọc `use_local_llm`:
+  - `True` → `HFLocalGenerator` (với quant + cleanup tùy chọn).
+  - `False` → `APITextGenerator`.
+- `release_generator(gen, delete_cache=None)` — helper gọi `unload(...)`
+  đồng bộ cho cả hai backend.
+
+### 5. Config flags mới
+`configs/model/llm_qwen.yaml` (+ `configs/default.yaml` mirror):
+```yaml
+model:
+  llm:
+    use_local_llm: true            # false → dùng API
+    cleanup_cache: true            # xoá weight sau khi sinh description
+    model_name: "Qwen/Qwen2.5-7B-Instruct"
+    device_map: "auto"
+    torch_dtype: "float16"
+    quantization: "4bit"           # "4bit" | "8bit" | null
+    low_cpu_mem_usage: true
+    cache_dir: "/tmp/hf-cache-fewshot-ood"
+    trust_remote_code: true
+    api:
+      provider: "openai"           # hoặc "anthropic", "openai-compatible"
+      model_name: "gpt-4o-mini"
+      api_key_env: "OPENAI_API_KEY"
+      base_url: null
+      timeout: 60.0
+```
+
+### 6. Script `generate_llm_descriptions.py` an toàn disk
+- Gọi `setup_hf_cache(verbose=True)` **đầu file** (trước mọi import HF).
+- Dùng `build_generator(...)` thay vì khởi tạo `HFLocalGenerator` trực tiếp.
+- Đặt generation trong `try / finally` → dù thành công hay crash vẫn chạy
+  `release_generator(gen, delete_cache=...)` để free VRAM + (optionally) disk.
+- Thêm CLI flags:
+  - `--use-api` — ép dùng API backend cho lần chạy này.
+  - `--force-cleanup` — luôn xoá cache sau khi xong.
+  - `--no-cleanup` — giữ cache (debug / chạy lại nhiều lần).
+
+### 7. Script xoá cache LLM độc lập
+File mới: `src/scripts/cleanup_llm_cache.py`
+```bash
+# Xoá toàn bộ cache LLM mặc định (/tmp/hf-cache-fewshot-ood)
+python src/scripts/cleanup_llm_cache.py
+
+# Chỉ xoá weight của 1 model
+python src/scripts/cleanup_llm_cache.py --model "Qwen/Qwen2.5-7B-Instruct"
+
+# Xoá luôn cả cache mặc định của HF ở ~/.cache/huggingface
+python src/scripts/cleanup_llm_cache.py --also-home
+
+# Dry-run (chỉ xem sẽ xoá những gì, KHÔNG xoá)
+python src/scripts/cleanup_llm_cache.py --dry-run
+```
+
+## Disk usage — before vs after
+
+| Giai đoạn                             | Trước (FP16, `~/.cache`) | Sau (4-bit + `/tmp` + cleanup) | Sau (API)   |
+| ------------------------------------- | ------------------------ | ------------------------------ | ----------- |
+| Download LLM lần đầu                  | ~15 GB (đĩa chính)       | ~15 GB nhưng ở `/tmp` (tmpfs)  | 0 GB        |
+| Sau khi sinh description              | ~15 GB còn nguyên        | 0 GB (tự xoá)                  | 0 GB        |
+| Dung lượng khả dụng trước training    | ~17 GB                   | ~30 GB                         | ~32 GB      |
+| VRAM khi load LLM                     | ~14 GB                   | ~4 GB                          | 0 GB        |
+
+## Workflow khuyến nghị trên cloud
+
+```bash
+# 1) Sinh description 1 lần (LLM nạp → sinh → tự xoá)
+python src/scripts/generate_llm_descriptions.py \
+  --config configs/experiment/exp_full_model.yaml \
+  --force-cleanup
+
+# 2) (Nếu lỡ còn cache sót) Xoá thủ công
+python src/scripts/cleanup_llm_cache.py --also-home
+
+# 3) Train bình thường, disk đã thoáng
+python src/scripts/train_fsl.py \
+  --config configs/experiment/exp_full_model.yaml --do-test
+```
+
+Hoặc dùng API (bỏ hẳn LLM local):
+```bash
+export OPENAI_API_KEY=sk-...
+python src/scripts/generate_llm_descriptions.py \
+  --config configs/experiment/exp_full_model.yaml --use-api
+```

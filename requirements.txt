@@ -10,7 +10,12 @@ open_clip_torch>=2.20.0
 # LLM / Transformers
 transformers>=4.36.0
 accelerate>=0.25.0
-bitsandbytes>=0.41.0  # Optional: for quantized LLM loading
+bitsandbytes>=0.41.0   # 4-bit / 8-bit quantization for local LLM (GPU only)
+
+# API-based LLM fallback (zero local disk usage)
+# Install the one you actually use:
+openai>=1.14.0         # optional — used when backend is "openai" / "openai-compatible"
+# anthropic>=0.25.0    # optional — used when backend is "anthropic"
 
 # Data
 numpy>=1.24.0

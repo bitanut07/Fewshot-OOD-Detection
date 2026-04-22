@@ -12,16 +12,34 @@ from src.models.encoders.text_generation.base_generator import (  # noqa: F401
     GenerationConfig,
 )
 from src.models.encoders.text_generation.hf_local_generator import HFLocalGenerator  # noqa: F401
+from src.models.encoders.text_generation.api_generator import APITextGenerator  # noqa: F401
+from src.models.encoders.text_generation.factory import (  # noqa: F401
+    build_generator,
+    release_generator,
+)
 from src.models.encoders.text_generation.prompt_builder import PromptBuilder  # noqa: F401
 from src.models.encoders.text_generation.output_cleaner import OutputCleaner  # noqa: F401
 from src.models.encoders.text_generation.cache_manager import CacheManager  # noqa: F401
+from src.models.encoders.text_generation.hf_env import (  # noqa: F401
+    setup_hf_cache,
+    cleanup_hf_cache,
+    cleanup_model_cache,
+    get_hf_cache_dir,
+)
 
 __all__ = [
     "LLMWrapper",
     "BaseTextGenerator",
     "GenerationConfig",
     "HFLocalGenerator",
+    "APITextGenerator",
     "PromptBuilder",
     "OutputCleaner",
     "CacheManager",
+    "build_generator",
+    "release_generator",
+    "setup_hf_cache",
+    "cleanup_hf_cache",
+    "cleanup_model_cache",
+    "get_hf_cache_dir",
 ]
