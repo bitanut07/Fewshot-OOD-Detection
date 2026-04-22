@@ -173,10 +173,7 @@ def train(
             # (3) global alignment (image <-> text embeddings)
             loss_ga: Optional[torch.Tensor] = None
             if global_feat is not None and text_for_align is not None:
-                try:
-                    loss_ga = ga_fn(global_feat, text_for_align, train_labels)
-                except Exception:  # noqa: BLE001
-                    loss_ga = None
+                loss_ga = ga_fn(global_feat, text_for_align, train_labels)
 
             # (4) OOD entropy regularization (glali entropy_select_topk)
             loss_ood_reg: Optional[torch.Tensor] = None

@@ -124,6 +124,12 @@ def entropy_select_topk(
     if local_logits.dim() != 3:
         raise ValueError(f"local_logits must be [B,P,C], got {tuple(local_logits.shape)}")
     B, P, C = local_logits.shape
+    if labels.min().item() < 0 or labels.max().item() >= C:
+        raise ValueError(
+            f"entropy_select_topk: labels out of range [0,{C}) "
+            f"min={labels.min().item()} max={labels.max().item()}. "
+            "Ensure labels are class indices into local_logits last dim."
+        )
     logits_flat = local_logits.reshape(B * P, C)
     probs = torch.softmax(logits_flat, dim=-1)
     label_repeat = labels.repeat_interleave(P)                       # [B*P]
