@@ -210,6 +210,11 @@ def main():
 
     config_path = sys.argv[1]
     config = load_yaml_config(config_path)
+    if not isinstance(config, dict) or "dataset" not in config:
+        raise ValueError(
+            "Config khong hop le: can key top-level 'dataset'. "
+            "Kiem tra lai file YAML (co the dang bi comment sai indent)."
+        )
 
     dataset_cfg = config["dataset"]
     source = dataset_cfg.get("source", "").lower()

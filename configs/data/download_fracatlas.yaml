@@ -1,21 +1,17 @@
 # =========================================================
 # Config tai dataset FracAtlas
-# - Mac dinh: Figshare (nguon DOI goc)
-# - Alternative: KaggleHub
+# - Dang dung: KaggleHub
+# - Alternative: Figshare (nguon DOI goc)
 # =========================================================
-# dataset:
-#   source: figshare
-#   article_url: "https://figshare.com/articles/dataset/22363012"
-
-#   # Neu muon tai file cu the, liet ke o day.
-#   # De trong [] se tai file dau tien tra ve tu Figshare API.
-#   expected_files:
-#     - "FracAtlas.zip"
-
-#   output_dir: "data/raw/FracAtlas"
-
-  # --- Alternative (KaggleHub) ---
+dataset:
   source: kaggle
   dataset_slug: "mahmudulhasantasin/fracatlas-original-dataset"
   output_dir: "data/raw/FracAtlas"
   kaggle_subpath: ""   # optional, copy subfolder/file inside kaggle cache
+
+  # --- Alternative (Figshare) ---
+  # source: figshare
+  # article_url: "https://figshare.com/articles/dataset/22363012"
+  # expected_files:
+  #   - "FracAtlas.zip"
+  # output_dir: "data/raw/FracAtlas"
