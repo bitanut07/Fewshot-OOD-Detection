@@ -112,6 +112,8 @@ ssh -i ~/.ssh/id_ed25519 -p 33528 root@116.109.174.203
 
 scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/data/prompts/class_descriptions.json .
 
+
+
 cd Fewshot-OOD-Detection
 
 Lệnh generate descriptions:

@@ -122,7 +122,7 @@ Generate exactly {num_descriptions} diverse, concise visual descriptions of
 makes this tumor type DIFFERENT from: {other_classes}
 
 STRICT requirements:
-- Each description is exactly ONE short sentence (10-25 words ideal)
+- Each description is exactly ONE short sentence (10-35 words ideal)
 - Describe ONLY features visible on plain X-ray
 - Each description must highlight a DISTINCT visual pattern
 - Descriptions must help a vision-language model distinguish "{class_name}" 
@@ -164,7 +164,7 @@ Generate exactly {num_descriptions} diverse, concise visual descriptions of
 tumor types listed above.
 
 STRICT requirements:
-- Each description is exactly ONE short sentence (10-25 words ideal)
+- Each description is exactly ONE short sentence (10-35 words ideal)
 - Describe ONLY features visible on plain X-ray
 - Each description must highlight a DISTINCT visual pattern
 - Focus on what makes "{class_name}" DIFFERENT from other tumor types
@@ -207,7 +207,7 @@ Requirements:
 - Generate exactly {num_needed} NEW descriptions, one per line
 - Each must be visually DISTINCT from the accepted ones above
 - Focus on different radiographic features not yet covered
-- Each description: ONE sentence, concise (about 6-22 words), plain X-ray features only
+- Each description: ONE sentence, concise (about 6-35 words), plain X-ray features only
 - Output must be English-only text
 
 FORBIDDEN: "This X-ray shows", "may", "might", "possibly", symptoms, history

@@ -173,7 +173,7 @@ class DescriptionScorer:
     def __init__(
         self,
         ideal_min_length: int = 40,
-        ideal_max_length: int = 150,
+        ideal_max_length: int = 260,
         radiographic_weight: float = 2.0,
         distinctive_weight: float = 3.0,
         length_weight: float = 1.0,
