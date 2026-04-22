@@ -200,6 +200,8 @@ def download_from_kaggle(dataset_cfg: dict):
     else:
         _copy_path(source_path, output_dir / source_path.name)
 
+    # Align structure with expected raw layout, e.g. output_dir/BTXRD/* -> output_dir/*
+    flatten_single_outer_folder(output_dir)
     print("[KAGGLE] copy completed.")
 
 

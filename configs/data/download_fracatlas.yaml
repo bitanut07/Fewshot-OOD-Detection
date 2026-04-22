@@ -7,7 +7,7 @@ dataset:
   source: kaggle
   dataset_slug: "mahmudulhasantasin/fracatlas-original-dataset"
   output_dir: "data/raw/FracAtlas"
-  kaggle_subpath: ""   # optional, copy subfolder/file inside kaggle cache
+  kaggle_subpath: "FracAtlas"   # optional, copy subfolder/file inside kaggle cache
 
   # --- Alternative (Figshare) ---
   # source: figshare
