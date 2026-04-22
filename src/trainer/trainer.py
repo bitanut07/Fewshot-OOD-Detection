@@ -31,7 +31,11 @@ from src.losses.classification_loss import ClassificationLoss
 from src.trainer.test import test as test_epoch
 from src.trainer.train import _build_total_loss_from_cfg, train as train_epoch
 from src.trainer.validate import validate as validate_epoch
-from src.utils.checkpoint import load_checkpoint, save_checkpoint
+from src.utils.checkpoint import (
+    load_checkpoint,
+    prune_checkpoint_dir,
+    save_checkpoint,
+)
 
 
 def _get(cfg: Any, *keys: str, default: Any = None) -> Any:
@@ -122,6 +126,15 @@ class Trainer:
         self.ckpt_dir = Path(_get(config, "paths", "checkpoint_dir", default=self.output_dir / "checkpoints"))
         self.ckpt_dir.mkdir(parents=True, exist_ok=True)
 
+        # Disk-efficient checkpointing: by default we only keep best.pt + last.pt
+        # on disk (overwriting each epoch). Turn off with keep_only_best=false.
+        self.keep_only_best = bool(_get(config, "train", "keep_only_best", default=True))
+        # On startup, wipe any stale per-epoch checkpoints left by previous runs.
+        if self.keep_only_best:
+            pruned = prune_checkpoint_dir(self.ckpt_dir, keep=("best.pt", "last.pt"))
+            if pruned and logger:
+                logger.info(f"Removed {pruned} old checkpoint file(s) from {self.ckpt_dir}")
+
         # Optimizer / scheduler
         trainable = [p for p in self.model.parameters() if p.requires_grad]
         if len(trainable) == 0:
@@ -180,8 +193,20 @@ class Trainer:
             "val_metric": val_metric,
             "config": self.config.to_dict() if hasattr(self.config, "to_dict") else None,
         }
-        fname = tag or f"epoch_{epoch}.pt"
-        save_checkpoint(state, self.ckpt_dir, fname, is_best=is_best)
+        # Default: always overwrite 'last.pt'. 'best.pt' is written by
+        # save_checkpoint when is_best=True. No per-epoch files hit disk.
+        if self.keep_only_best:
+            fname = tag or "last.pt"
+            save_checkpoint(
+                state, self.ckpt_dir, fname,
+                is_best=is_best,
+                keep_only_best=True,
+                keep_names=("best.pt", "last.pt"),
+            )
+        else:
+            fname = tag or f"epoch_{epoch}.pt"
+            save_checkpoint(state, self.ckpt_dir, fname, is_best=is_best)
+
         if self.logger:
             flag = " (best)" if is_best else ""
             self.logger.info(f"Saved checkpoint → {self.ckpt_dir / fname}{flag}")

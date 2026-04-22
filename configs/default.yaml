@@ -241,6 +241,10 @@ train:
   mixed_precision: true
   ema: false
   ema_decay: 0.999
+  # Checkpointing — disk-efficient defaults for small-disk GPU cloud:
+  #   only best.pt + last.pt are kept (both overwritten in place)
+  save_best: true
+  keep_only_best: true
 
 fewshot:
   n_way: 6

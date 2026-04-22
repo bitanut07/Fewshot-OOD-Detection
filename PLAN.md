@@ -566,19 +566,25 @@ model:
   - `--no-cleanup` — giữ cache (debug / chạy lại nhiều lần).
 
 ### 7. Script xoá cache LLM độc lập
-File mới: `src/scripts/cleanup_llm_cache.py`
+File mới: `src/scripts/cleanup_llm_cache.py` (quét đủ 6 vị trí HF cache
+phổ biến: `/tmp/hf-cache-*`, `$HF_HOME`, `$HF_HUB_CACHE`,
+`$HUGGINGFACE_HUB_CACHE`, `$TRANSFORMERS_CACHE`, `~/.cache/huggingface`,
+`/root/.cache/huggingface`).
 ```bash
-# Xoá toàn bộ cache LLM mặc định (/tmp/hf-cache-fewshot-ood)
+# Xem có cache ở đâu (KHÔNG xoá)
+python src/scripts/cleanup_llm_cache.py --scan
+
+# Xoá SẠCH mọi vị trí cache HF đã phát hiện (khuyến nghị trên cloud)
+python src/scripts/cleanup_llm_cache.py --all --yes
+
+# Chỉ xoá weight của 1 model, ở mọi vị trí
+python src/scripts/cleanup_llm_cache.py --all --model "Qwen/Qwen2.5-7B-Instruct" --yes
+
+# Xoá cache + prune checkpoint cũ (giữ best.pt + last.pt)
+python src/scripts/cleanup_llm_cache.py --all --prune-checkpoints outputs/runs --yes
+
+# Chỉ xoá /tmp cache mặc định (hành vi cũ)
 python src/scripts/cleanup_llm_cache.py
-
-# Chỉ xoá weight của 1 model
-python src/scripts/cleanup_llm_cache.py --model "Qwen/Qwen2.5-7B-Instruct"
-
-# Xoá luôn cả cache mặc định của HF ở ~/.cache/huggingface
-python src/scripts/cleanup_llm_cache.py --also-home
-
-# Dry-run (chỉ xem sẽ xoá những gì, KHÔNG xoá)
-python src/scripts/cleanup_llm_cache.py --dry-run
 ```
 
 ## Disk usage — before vs after
@@ -611,4 +617,47 @@ Hoặc dùng API (bỏ hẳn LLM local):
 export OPENAI_API_KEY=sk-...
 python src/scripts/generate_llm_descriptions.py \
   --config configs/experiment/exp_full_model.yaml --use-api
+```
+
+# Checkpoint disk-efficient (fix lỗi zip short-write)
+
+## Lỗi gặp phải
+```
+RuntimeError: [enforce fail at inline_container.cc:672] .
+unexpected pos 878616000 vs 878615888
+```
+Lỗi ghi file của `torch.save`: thiếu đúng 112 byte cuối của zip ~838MB
+→ **đĩa hết chỗ giữa lúc ghi checkpoint**. Kết hợp với LLM cache 15GB
+còn sót, mỗi epoch lại sinh thêm 1 file `epoch_N.pt` ~838MB → đầy đĩa.
+
+## Fix đã làm
+- `src/utils/checkpoint.py`:
+  - `save_checkpoint(...)` ghi **atomic**: `torch.save` vào `<path>.tmp`
+    rồi `os.replace` → nếu hết đĩa thì không để lại file hỏng.
+  - Thêm `keep_only_best=True` và `prune_checkpoint_dir(keep=...)`:
+    tự xoá mọi `*.pt` / `*.pt.tmp` khác không nằm trong whitelist.
+- `src/trainer/trainer.py`:
+  - Flag config `train.keep_only_best: true` (default).
+  - Mỗi lần `save(...)` chỉ ghi **`last.pt`** (overwrite tại chỗ);
+    khi `is_best=True` thêm **`best.pt`** (cũng overwrite).
+  - Khi khởi tạo `Trainer`, tự `prune_checkpoint_dir(...)` để xoá
+    checkpoint `epoch_N.pt` cũ từ run trước.
+- `configs/default.yaml`:
+```yaml
+train:
+  save_best: true
+  keep_only_best: true   # chỉ giữ best.pt + last.pt, xoá mọi file khác
+```
+
+## Kết quả
+- Disk checkpoint steady state ≈ 2 × 838MB = **~1.7GB** thay vì
+  `N_epochs × 838MB` (40 epoch → ~33GB, chắc chắn đầy đĩa 32GB).
+- Không còn `epoch_1.pt`, `epoch_5.pt`, ... tích luỹ trên đĩa.
+- Atomic save tránh tạo file `.pt` hỏng khi disk đầy → lần sau không
+  crash lúc `load_checkpoint`.
+
+## Nếu cần quay lại save mỗi epoch (debug)
+```yaml
+train:
+  keep_only_best: false
 ```
