@@ -2,13 +2,19 @@
 # Config tai dataset BTXRD tu Figshare
 # Reference: https://doi.org/10.6084/m9.figshare.27865398
 # =========================================================
-dataset:
-  source: figshare
-  article_url: "https://figshare.com/articles/dataset/27865398"
+# dataset:
+#   source: figshare
+#   article_url: "https://figshare.com/articles/dataset/27865398"
 
-  # Neu muon tai file cu the, liet ke o day.
-  # De trong [] se tai file dau tien tra ve tu Figshare API.
-  expected_files:
-    - "BTXRD.zip"
+#   # Neu muon tai file cu the, liet ke o day.
+#   # De trong [] se tai file dau tien tra ve tu Figshare API.
+#   expected_files:
+#     - "BTXRD.zip"
 
+#   output_dir: "data/raw/BTXRD"
+
+  # --- Alternative (KaggleHub) ---
+  source: kaggle
+  dataset_slug: "blaster21/btxrd-dataset"
   output_dir: "data/raw/BTXRD"
+  kaggle_subpath: ""   # optional, copy subfolder/file inside kaggle cache
