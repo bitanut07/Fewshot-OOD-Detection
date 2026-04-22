@@ -198,6 +198,14 @@ loss:
     weight: 0.5
   text_refinement:
     weight: 0.1
+  # Glali-style OOD entropy regularization over non-top-K local patches
+  ood_reg:
+    weight: 0.25
+  # Teacher-student distillation weights (set >0 only when teacher encoder is on)
+  distill_img:
+    weight: 10.0
+  distill_text:
+    weight: 0.0
 
 # =============================================================================
 # Training Configuration
@@ -237,3 +245,35 @@ ood:
   method: "msp"
   threshold_strategy: "percentile"
   percentile: 95
+  # Top-k used by entropy_select_topk (patches whose top-k does NOT
+  # contain the GT label are pushed toward uniform — glali LoCoOp)
+  topk: 50
+  temperature: 1.0
+
+# =============================================================================
+# Experiment / IO paths
+# =============================================================================
+experiment:
+  seed: 42
+  deterministic: false
+  name: "default"
+
+paths:
+  output_dir: "outputs/runs"
+  log_dir: "outputs/logs"
+  tb_dir: "outputs/tensorboard"
+  checkpoint_dir: null
+  data_root: "data/processed/image_processing"
+
+logging:
+  level: "INFO"
+
+# =============================================================================
+# Data defaults
+# =============================================================================
+data:
+  manifest_file: "data/processed/data_processing/manifest.csv"
+  val_ratio: 0.15
+  test_ratio: 0.15
+  num_workers: 4
+  pin_memory: true
