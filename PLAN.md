@@ -112,7 +112,9 @@ ssh -i ~/.ssh/id_ed25519 -p 33528 root@116.109.174.203
 
 scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/data/prompts/class_descriptions.json .
 
+scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/outputs/runs/full_model/checkpoints/best.pt .
 
+scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/outputs/eval/full_model.json .
 
 cd Fewshot-OOD-Detection
 
@@ -618,6 +620,22 @@ export OPENAI_API_KEY=sk-...
 python src/scripts/generate_llm_descriptions.py \
   --config configs/experiment/exp_full_model.yaml --use-api
 ```
+
+
+# 1) Giải phóng ~15GB LLM cache
+rm -rf /workspace/.hf_home
+
+# 2) Giải phóng ~6GB checkpoint cũ (giữ best.pt + last.pt)
+python src/scripts/cleanup_llm_cache.py --prune-checkpoints outputs --yes
+
+# 3) Giải phóng ~2.8GB pip cache
+pip cache purge
+
+# 4) Giải phóng ~1.2GB KaggleHub cache (chỉ nếu dataset đã copy sang data/raw/ rồi)
+rm -rf /root/.cache/kagglehub
+
+# 5) Kiểm tra kết quả
+df -h /
 
 # Checkpoint disk-efficient (fix lỗi zip short-write)
 

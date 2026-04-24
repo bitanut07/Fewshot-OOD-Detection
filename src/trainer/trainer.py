@@ -161,6 +161,11 @@ class Trainer:
         self.best_epoch = 0
         self.global_step = 0
 
+        # Early stopping
+        self.es_patience = int(_get(config, "train", "early_stopping_patience", default=0))
+        self.es_min_delta = float(_get(config, "train", "early_stopping_min_delta", default=0.0))
+        self._es_counter = 0
+
     # ------------------------------------------------------------------
     # Checkpoint
     # ------------------------------------------------------------------
@@ -225,6 +230,7 @@ class Trainer:
             raise RuntimeError("train() called without a train_loader")
 
         history = {"train": [], "val": []}
+        stopped_early = False
         for epoch in range(self.start_epoch, epochs + 1):
             # ---- train epoch ----
             train_metrics = train_epoch(
@@ -254,19 +260,34 @@ class Trainer:
                 )
                 history["val"].append(val_metrics)
                 val_metric = float(val_metrics.get("val_accuracy", 0.0))
-                if val_metric > self.best_val:
+                if val_metric > self.best_val + self.es_min_delta:
                     self.best_val = val_metric
                     self.best_epoch = epoch
                     is_best = True
+                    self._es_counter = 0
+                else:
+                    self._es_counter += 1
 
             # ---- checkpoint ----
             if epoch % save_every == 0 or epoch == epochs or is_best:
                 self.save(epoch, float(val_metrics.get("val_accuracy", 0.0)),
                           is_best=(is_best and save_best))
 
+            # ---- early stopping ----
+            if self.es_patience > 0 and self._es_counter >= self.es_patience:
+                if self.logger:
+                    self.logger.info(
+                        f"Early stopping triggered at epoch {epoch}: "
+                        f"no improvement for {self.es_patience} eval cycles "
+                        f"(best_val={self.best_val:.4f} @ epoch {self.best_epoch})"
+                    )
+                stopped_early = True
+                break
+
         if self.logger:
+            tag = " (early stopped)" if stopped_early else ""
             self.logger.info(
-                f"Training complete. Best val acc={self.best_val:.4f} @ epoch {self.best_epoch}"
+                f"Training complete{tag}. Best val acc={self.best_val:.4f} @ epoch {self.best_epoch}"
             )
         return {"history": history, "best_val": self.best_val, "best_epoch": self.best_epoch}
 

@@ -111,22 +111,23 @@ class DiseaseTextRefiner(nn.Module):
         if visual_embeddings.dim() == 2:
             visual_embeddings = visual_embeddings.unsqueeze(1)
 
-        # Project to hidden_dim
-        x = self.text_proj(text_embeddings)  # [B, T, hidden_dim]
+        original = text_embeddings  # keep for interpolation
+
+        x = self.text_proj(text_embeddings)       # [B, T, hidden_dim]
         visual = self.visual_proj(visual_embeddings)  # [B, V, hidden_dim]
 
-        # Pass through refinement layers
         for layer in self.layers:
             x = layer(x, visual)
 
-        # Project back to text_dim and apply interpolation
-        refined = self.output_proj(x)
+        transformed = self.output_proj(x)
+
+        # Interpolate: alpha * original + (1 - alpha) * transformed
+        refined = self.alpha * original + (1.0 - self.alpha) * transformed
 
         if return_refined_only:
             result = refined
         else:
-            # Also return original text for comparison
-            result = torch.cat([text_embeddings, refined], dim=1)
+            result = torch.cat([original, refined], dim=1)
 
         if squeeze:
             result = result.squeeze(1)

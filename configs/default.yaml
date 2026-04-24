@@ -241,6 +241,11 @@ train:
   mixed_precision: true
   ema: false
   ema_decay: 0.999
+  # Early stopping: stop training when val metric does not improve for
+  # ``early_stopping_patience`` consecutive evaluation epochs.
+  # Set to 0 to disable.
+  early_stopping_patience: 10
+  early_stopping_min_delta: 0.0001
   # Checkpointing — disk-efficient defaults for small-disk GPU cloud:
   #   only best.pt + last.pt are kept (both overwritten in place)
   save_best: true

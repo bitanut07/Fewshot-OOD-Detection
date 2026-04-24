@@ -244,11 +244,11 @@ class GLocalFSLOODModel(nn.Module):
         else:
             text_for_align = protos                                 # [C, D]
 
-        # --- region selection
+        # --- region selection (condition on GT class when labels available)
         relevant_feats = irrelevant_feats = None
         if self.region_selector is not None and local_feat is not None:
             proto_for_region = protos.unsqueeze(0).expand(B, -1, -1)
-            region_out = self.region_selector(local_feat, proto_for_region)
+            region_out = self.region_selector(local_feat, proto_for_region, labels=labels)
             relevant_feats = region_out["relevant_features"]
             irrelevant_feats = region_out["irrelevant_features"]
 
@@ -318,12 +318,25 @@ class GLocalFSLOODModel(nn.Module):
         return [p for p in self.parameters() if p.requires_grad]
 
     def freeze_encoders(self) -> None:
-        for p in self.image_encoder.parameters():
-            p.requires_grad = False
+        """Freeze encoders that are configured as frozen.
+
+        Respects ``clip.freeze`` from config so that baseline experiments
+        with ``freeze: false`` can fine-tune the image encoder.
+        """
+        clip_cfg = _get(self.config, "model", "clip") or _get(self.config, "clip") or {}
+        should_freeze_clip = bool(_get(clip_cfg, "freeze", default=True))
+
+        if should_freeze_clip:
+            for p in self.image_encoder.parameters():
+                p.requires_grad = False
+            self.image_encoder.eval()
+
+        # Text encoder is always frozen (no trainable prompt learner here)
         for p in self.text_encoder.parameters():
             p.requires_grad = False
-        self.image_encoder.eval()
         self.text_encoder.eval()
+
+        # Teacher is always frozen
         if self.teacher_image_encoder is not None:
             for p in self.teacher_image_encoder.parameters():
                 p.requires_grad = False
