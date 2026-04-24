@@ -219,12 +219,27 @@ def main() -> None:
     parser.add_argument("--gpu", type=int, default=0)
     parser.add_argument("--do-test", action="store_true", help="Run test after training")
     parser.add_argument("--eval-only", action="store_true", help="Skip training, only run test")
+    parser.add_argument("--lr", type=float, default=None, help="Override learning rate (e.g. --lr 5e-5)")
+    parser.add_argument("--epochs", type=int, default=None, help="Override number of training epochs")
+    parser.add_argument("--batch-size", type=int, default=None, help="Override training batch size")
+    parser.add_argument("--k-shot", type=int, default=None, help="Override few-shot k value")
     args = parser.parse_args()
 
     # ---- config ----
     config = load_config(args.config)
     if args.override:
         config = _merge_configs(config, load_config(args.override))
+
+    # ---- CLI overrides (take precedence over config files) ----
+    if args.lr is not None:
+        config.setdefault("train", {}).setdefault("optimizer", {})["lr"] = args.lr
+    if args.epochs is not None:
+        config.setdefault("train", {})["epochs"] = args.epochs
+        config.setdefault("train", {}).setdefault("scheduler", {})["T_max"] = args.epochs
+    if args.batch_size is not None:
+        config.setdefault("train", {})["batch_size"] = args.batch_size
+    if args.k_shot is not None:
+        config.setdefault("fewshot", {})["k_shot"] = args.k_shot
 
     seed = int(_get(config, "experiment", "seed", default=42))
     set_seed(seed, deterministic=bool(_get(config, "experiment", "deterministic", default=False)))

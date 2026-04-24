@@ -356,7 +356,7 @@ python src/scripts/train_fsl.py \
 ```bash
 python src/scripts/train_fsl.py \
   --config configs/experiment/exp_full_model.yaml \
-  --resume outputs/runs/full_model/checkpoints/epoch_20.pt
+  --resume outputs/runs/full_model/checkpoints/best.pt
 ```
 
 ### Eval-only (dùng best checkpoint)
