@@ -34,15 +34,20 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from src.utils.config import load_config
-from src.models.encoders.text_generation import (
+# Redirect HF cache to /tmp *before* transformers is imported anywhere.
+from src.models.encoders.text_generation.hf_env import setup_hf_cache  # noqa: E402
+setup_hf_cache(verbose=True)
+
+from src.utils.config import load_config  # noqa: E402
+from src.models.encoders.text_generation import (  # noqa: E402
     LLMWrapper,
     GenerationConfig,
-    HFLocalGenerator,
     PromptBuilder,
     OutputCleaner,
     DescriptionScorer,
     CacheManager,
+    build_generator,
+    release_generator,
 )
 
 logging.basicConfig(
@@ -98,6 +103,21 @@ def main():
         default=None,
         help="Optional JSON path to export candidate-level quality report",
     )
+    parser.add_argument(
+        "--no-cleanup",
+        action="store_true",
+        help="Do not delete the HF cache after generation (overrides config).",
+    )
+    parser.add_argument(
+        "--force-cleanup",
+        action="store_true",
+        help="Always delete the HF cache after generation (overrides config).",
+    )
+    parser.add_argument(
+        "--use-api",
+        action="store_true",
+        help="Force API backend (sets use_local_llm=false for this run).",
+    )
     args = parser.parse_args()
 
     # ── Load config ──────────────────────────────────────────────────────
@@ -149,15 +169,19 @@ def main():
         deterministic=deterministic,
     )
 
-    effective_cache_dir = llm_cfg.get("cache_dir") or os.getenv("HF_CACHE_DIR")
-
-    generator = HFLocalGenerator(
-        model_name_or_path=llm_cfg.get("model_name", "Qwen/Qwen2.5-7B-Instruct"),
-        device_map=llm_cfg.get("device_map", "auto"),
-        torch_dtype=llm_cfg.get("torch_dtype", "float16"),
-        cache_dir=effective_cache_dir,
-        trust_remote_code=llm_cfg.get("trust_remote_code", True),
+    # Resolve the effective LLM config, applying CLI overrides.
+    effective_llm_cfg = dict(llm_cfg)
+    effective_llm_cfg["cache_dir"] = (
+        effective_llm_cfg.get("cache_dir") or os.getenv("HF_CACHE_DIR")
     )
+    if args.use_api:
+        effective_llm_cfg["use_local_llm"] = False
+    if args.force_cleanup:
+        effective_llm_cfg["cleanup_cache"] = True
+    if args.no_cleanup:
+        effective_llm_cfg["cleanup_cache"] = False
+
+    generator = build_generator(effective_llm_cfg)
 
     prompt_builder = PromptBuilder(dataset_description=dataset_desc)
     cleaner = OutputCleaner()
@@ -187,6 +211,7 @@ def main():
         log.info("  Descriptions: %s", descriptions_out)
         log.info("  JSON: %s", json_out)
         log.info("Use --force to regenerate.")
+        release_generator(generator, delete_cache=effective_llm_cfg.get("cleanup_cache"))
         return
 
     # ── Run multi-stage generation ───────────────────────────────────────
@@ -194,6 +219,62 @@ def main():
     log.info("Starting multi-stage generation pipeline")
     log.info("=" * 60)
 
+    try:
+        _run_generation(
+            args=args,
+            cfg=cfg,
+            llm=llm,
+            generator=generator,
+            cache=cache,
+            cleaner=cleaner,
+            prompt_builder=prompt_builder,
+            gen_config=gen_config,
+            class_names=class_names,
+            num_q=num_q,
+            num_a=num_a,
+            num_d=num_d,
+            seed=seed,
+            questions_out=questions_out,
+        )
+    finally:
+        # Always reclaim VRAM and (optionally) disk, even on failure.
+        release_generator(generator, delete_cache=effective_llm_cfg.get("cleanup_cache"))
+        if effective_llm_cfg.get("cleanup_cache"):
+            log.info("LLM cache cleanup requested → disk freed.")
+
+    log.info("=" * 60)
+    log.info("Generation complete in %.1fs", time.time() - t0)
+    log.info("=" * 60)
+    log.info("  Questions:    %s", questions_out)
+    log.info("  Descriptions: %s", descriptions_out)
+    log.info("  Flat JSON:    %s", json_out)
+    if args.quality_report:
+        llm.export_quality_report({
+            "dataset_name": cfg.data.get("dataset_name", "bone_xray"),
+            "class_names": class_names,
+            "num_questions": num_q,
+            "num_attributes": num_a,
+            "num_descriptions": num_d,
+        })
+
+
+def _run_generation(
+    *,
+    args,
+    cfg,
+    llm,
+    generator,
+    cache,
+    cleaner,
+    prompt_builder,
+    gen_config,
+    class_names,
+    num_q,
+    num_a,
+    num_d,
+    seed,
+    questions_out,
+) -> None:
     # Handle skip_questions
     if args.skip_questions and cache.questions_exist():
         questions = cache.load_questions()
@@ -276,21 +357,6 @@ def main():
             min_descriptions_per_class=args.min_final_descriptions,
             force_regenerate=True,  # Already checked cache above
         )
-
-    log.info("=" * 60)
-    log.info("Generation complete in %.1fs", time.time() - t0)
-    log.info("=" * 60)
-    log.info("  Questions:    %s", questions_out)
-    log.info("  Descriptions: %s", descriptions_out)
-    log.info("  Flat JSON:    %s", json_out)
-    if args.quality_report:
-        llm.export_quality_report({
-            "dataset_name": cfg.data.get("dataset_name", "bone_xray"),
-            "class_names": class_names,
-            "num_questions": num_q,
-            "num_attributes": num_a,
-            "num_descriptions": num_d,
-        })
 
 
 if __name__ == "__main__":

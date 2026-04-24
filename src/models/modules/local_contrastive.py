@@ -69,37 +69,19 @@ class LocalContrastiveLearner(nn.Module):
             Tuple of (loss, metrics_dict)
         """
         B, K, D = relevant_features.shape
-        BK = self.bottom_k
 
-        # Normalize features
         relevant_features = F.normalize(relevant_features, p=2, dim=-1)
         irrelevant_features = F.normalize(irrelevant_features, p=2, dim=-1)
         class_prototypes = F.normalize(class_prototypes, p=2, dim=-1)
 
-        # Reshape for computation
-        # relevant: [B*K, D], irrelevant: [B*BK, D]
-        rel_flat = relevant_features.view(-1, D)  # [B*K, D]
+        rel_flat = relevant_features.view(-1, D)   # [B*K, D]
         irr_flat = irrelevant_features.view(-1, D)  # [B*BK, D]
 
-        # Positive pairs: each relevant patch with its class prototype
-        pos_sim = torch.matmul(rel_flat, class_prototypes.T) / self.temperature  # [B*K, num_classes]
+        loss = self._compute_ntxent_loss(rel_flat, irr_flat, class_prototypes, labels, K)
 
-        # Negative pairs: each relevant patch with irrelevant patches
-        neg_sim = torch.matmul(rel_flat, irr_flat.T) / self.temperature  # [B*K, B*BK]
-
-        # Contrastive loss: supervised version
-        # We want to push relevant patches close to their own class prototype
-        # and away from other class prototypes
-
-        # Option 1: Simple contrastive with positives and negatives
-        # logits = torch.cat([pos_sim, neg_sim], dim=-1)  # [B*K, num_classes + B*BK]
-        # labels = torch.zeros(B*K, dtype=torch.long, device=logits.device)  # positive is at index 0
-
-        # Option 2: Per-class NT-Xent style loss
-        loss = self._compute_ntxent_loss(rel_flat, irr_flat, class_prototypes)
-
-        # Compute metrics
         with torch.no_grad():
+            pos_sim = torch.matmul(rel_flat, class_prototypes.T) / self.temperature
+            neg_sim = torch.matmul(rel_flat, irr_flat.T) / self.temperature
             metrics = {
                 "local_contrastive_loss": loss.item(),
                 "avg_pos_sim": pos_sim.mean().item(),
@@ -113,30 +95,42 @@ class LocalContrastiveLearner(nn.Module):
         anchors: torch.Tensor,
         negatives: torch.Tensor,
         prototypes: torch.Tensor,
+        labels: Optional[torch.Tensor] = None,
+        patches_per_sample: int = 1,
     ) -> torch.Tensor:
-        """Compute NT-Xent style supervised contrastive loss."""
-        # Anchor-positive: anchors to their own class prototype
-        # Anchor-negative: anchors to all other prototypes AND irrelevant patches
+        """Supervised NT-Xent: each anchor → own class proto (pos) vs all
+        other protos + irrelevant patches (neg)."""
+        num_classes = prototypes.size(0)
+        N = anchors.size(0)  # B * K
 
-        all_negatives = torch.cat([prototypes, negatives], dim=0)  # [num_classes + total_neg, D]
-        all_negatives = F.normalize(all_negatives, p=2, dim=-1)
+        # Similarity of anchors to all class prototypes  [N, C]
+        proto_sim = torch.matmul(anchors, prototypes.T) / self.temperature
+        # Similarity of anchors to all irrelevant patches [N, B*BK]
+        neg_sim = torch.matmul(anchors, negatives.T) / self.temperature
 
-        # For simplicity, use prototype-based contrastive loss
-        # Each anchor should be close to its own class prototype
-        # and far from all other prototypes
-        pos_sim = torch.matmul(anchors, prototypes.T) / self.temperature
-        neg_sim = torch.matmul(anchors, prototypes.T) / self.temperature
+        # Build per-anchor positive index (the GT class column in proto_sim)
+        if labels is not None:
+            # labels: [B] → repeat each K times to get [B*K]
+            anchor_labels = labels.repeat_interleave(patches_per_sample)
+        else:
+            anchor_labels = torch.arange(N, device=anchors.device) % num_classes
 
-        # Create positive mask (each anchor's own class)
-        num_anchors = anchors.size(0)
-        num_prototypes = prototypes.size(0)
-        labels = torch.arange(num_anchors, device=anchors.device) % num_prototypes
+        # Positive score: similarity to the GT class prototype  [N, 1]
+        pos_score = proto_sim.gather(1, anchor_labels.unsqueeze(1))
 
-        # logits = [pos_sim, neg_sim] with positive at index 0
-        logits = torch.cat([pos_sim, neg_sim], dim=-1)
-        pos_labels = torch.zeros(num_anchors, dtype=torch.long, device=logits.device)
+        # Negative logits: all proto columns (incl. pos — will be masked)
+        # + irrelevant patch similarities
+        logits = torch.cat([proto_sim, neg_sim], dim=1)  # [N, C + B*BK]
 
-        loss = F.cross_entropy(logits, pos_labels)
-        return loss
+        # Mask out the positive prototype column so it is not double-counted
+        mask = torch.ones_like(logits)
+        mask.scatter_(1, anchor_labels.unsqueeze(1), 0.0)
 
-        
+        # log-sum-exp over negatives only
+        neg_logits = logits + (mask.log())  # -inf for masked positions
+        log_sum_exp_neg = torch.logsumexp(neg_logits, dim=1, keepdim=True)
+
+        # InfoNCE: -log( exp(pos) / (exp(pos) + sum_neg exp(neg)) )
+        loss = -pos_score + torch.logaddexp(pos_score, log_sum_exp_neg)
+        return loss.mean()
+

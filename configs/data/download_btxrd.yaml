@@ -1,0 +1,17 @@
+# =========================================================
+# Config tai dataset BTXRD
+# - Dang dung: KaggleHub
+# - Alternative: Figshare (DOI goc)
+# =========================================================
+dataset:
+  source: kaggle
+  dataset_slug: "blaster21/btxrd-dataset"
+  output_dir: "data/raw/BTXRD"
+  kaggle_subpath: "BTXRD"   # optional, copy subfolder/file inside kaggle cache
+
+  # --- Alternative (Figshare) ---
+  # source: figshare
+  # article_url: "https://figshare.com/articles/dataset/27865398"
+  # expected_files:
+  #   - "BTXRD.zip"
+  # output_dir: "data/raw/BTXRD"

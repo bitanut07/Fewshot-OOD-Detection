@@ -1,0 +1,17 @@
+# =========================================================
+# Config tai dataset FracAtlas
+# - Dang dung: KaggleHub
+# - Alternative: Figshare (nguon DOI goc)
+# =========================================================
+dataset:
+  source: kaggle
+  dataset_slug: "mahmudulhasantasin/fracatlas-original-dataset"
+  output_dir: "data/raw/FracAtlas"
+  kaggle_subpath: "FracAtlas"   # optional, copy subfolder/file inside kaggle cache
+
+  # --- Alternative (Figshare) ---
+  # source: figshare
+  # article_url: "https://figshare.com/articles/dataset/22363012"
+  # expected_files:
+  #   - "FracAtlas.zip"
+  # output_dir: "data/raw/FracAtlas"

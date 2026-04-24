@@ -1,17 +1,38 @@
 # =============================================================================
 # LLM Configuration (offline description generation)
-# Low temperature for stable, deterministic medical descriptions
+# Tuned for a ~32GB-disk GPU cloud node:
+#   - cache redirected to /tmp so weights never fill the training disk
+#   - 4-bit quantization cuts VRAM to ~4GB
+#   - cleanup_cache deletes weights after descriptions are generated
+#   - API fallback available (use_local_llm: false) to skip local weights
 # =============================================================================
 
 model:
   llm:
+    # ── Backend selection ───────────────────────────────────────────────
+    use_local_llm: true          # false → call OpenAI/Anthropic API instead
+    cleanup_cache: true          # wipe HF cache after generation finishes
+
+    # ── Local (HuggingFace) settings ───────────────────────────────────
     model_name: "Qwen/Qwen2.5-7B-Instruct"
     device_map: "auto"
     torch_dtype: "float16"
+    quantization: "4bit"         # "4bit" | "8bit" | null
+    low_cpu_mem_usage: true
+    cache_dir: "/tmp/hf-cache-fewshot-ood"
+    trust_remote_code: true
+
+    # Generation defaults
     max_new_tokens: 768
     temperature: 0.3
     top_p: 0.85
     repetition_penalty: 1.15
-    cache_dir: null
     freeze: true
-    trust_remote_code: true
+
+    # ── API fallback (only used when use_local_llm: false) ─────────────
+    api:
+      provider: "openai"              # "openai" | "anthropic" | "openai-compatible"
+      model_name: "gpt-4o-mini"
+      api_key_env: "OPENAI_API_KEY"
+      base_url: null                   # e.g. "https://api.groq.com/openai/v1"
+      timeout: 60.0

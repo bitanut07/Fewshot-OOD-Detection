@@ -4,6 +4,7 @@ import yaml
 import requests
 from pathlib import Path
 import zipfile
+import shutil
 
 
 API_BASE = "https://api.figshare.com/v2"
@@ -108,6 +109,102 @@ def unzip_file(zip_path: Path, extract_to: Path):
     print(f"[UNZIP] Extracted to: {extract_to}")
 
 
+def _is_safe_to_flatten(parent: Path, child: Path) -> bool:
+    """Only flatten when nested folder is a simple wrapper directory."""
+    if not child.is_dir():
+        return False
+
+    child_items = list(child.iterdir())
+    parent_items = [p for p in parent.iterdir() if p != child]
+    child_names = {p.name for p in child_items}
+    parent_names = {p.name for p in parent_items}
+
+    # Avoid accidental overwrite when moving files up one level.
+    return len(child_items) > 0 and child_names.isdisjoint(parent_names)
+
+
+def flatten_single_outer_folder(extract_to: Path):
+    """
+    If zip extracted into a single wrapper folder, move its contents up.
+    Example: data/raw/BTXRD/BTXRD/{images,Annotations,dataset.csv}
+          -> data/raw/BTXRD/{images,Annotations,dataset.csv}
+    """
+    items = [p for p in extract_to.iterdir()]
+    if len(items) != 1:
+        print("[CLEANUP] Skip flatten: not a single outer folder.")
+        return
+
+    outer = items[0]
+    if not _is_safe_to_flatten(extract_to, outer):
+        print("[CLEANUP] Skip flatten: unsafe or nothing to move.")
+        return
+
+    print(f"[CLEANUP] Flatten outer folder: {outer}")
+    for child in outer.iterdir():
+        target = extract_to / child.name
+        shutil.move(str(child), str(target))
+    outer.rmdir()
+    print("[CLEANUP] Outer folder removed.")
+
+
+def remove_zip_if_unused(zip_path: Path):
+    if not zip_path.exists():
+        print("[CLEANUP] Zip already removed.")
+        return
+
+    zip_path.unlink()
+    print(f"[CLEANUP] Removed zip file: {zip_path}")
+
+
+def _copy_path(src: Path, dst: Path):
+    if src.is_dir():
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+    else:
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(src, dst)
+
+
+def download_from_kaggle(dataset_cfg: dict):
+    dataset_slug = dataset_cfg.get("dataset_slug")
+    if not dataset_slug:
+        raise ValueError("Kaggle source can 'dataset_slug' trong config.")
+
+    output_dir = Path(dataset_cfg["output_dir"])
+    kaggle_subpath = dataset_cfg.get("kaggle_subpath")
+
+    try:
+        import kagglehub  # type: ignore
+    except ImportError as e:
+        raise ImportError(
+            "Chua cai kagglehub. Hay cai bang: pip install kagglehub"
+        ) from e
+
+    print(f"[KAGGLE] dataset_slug = {dataset_slug}")
+    download_root = Path(kagglehub.dataset_download(dataset_slug))
+    print(f"[KAGGLE] downloaded to cache: {download_root}")
+
+    source_path = download_root
+    if kaggle_subpath:
+        source_path = download_root / kaggle_subpath
+        if not source_path.exists():
+            raise FileNotFoundError(
+                f"Kaggle subpath khong ton tai: {source_path}"
+            )
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"[KAGGLE] copying data -> {output_dir}")
+
+    if source_path.is_dir():
+        for item in source_path.iterdir():
+            _copy_path(item, output_dir / item.name)
+    else:
+        _copy_path(source_path, output_dir / source_path.name)
+
+    # Align structure with expected raw layout, e.g. output_dir/BTXRD/* -> output_dir/*
+    flatten_single_outer_folder(output_dir)
+    print("[KAGGLE] copy completed.")
+
+
 def main():
     if len(sys.argv) < 2:
         print("Usage: python scripts/download_dataset.py <config.yaml>")
@@ -115,37 +212,48 @@ def main():
 
     config_path = sys.argv[1]
     config = load_yaml_config(config_path)
+    if not isinstance(config, dict) or "dataset" not in config:
+        raise ValueError(
+            "Config khong hop le: can key top-level 'dataset'. "
+            "Kiem tra lai file YAML (co the dang bi comment sai indent)."
+        )
 
     dataset_cfg = config["dataset"]
     source = dataset_cfg.get("source", "").lower()
 
-    if source != "figshare":
-        raise ValueError(f"Source '{source}' chua duoc ho tro trong script nay.")
+    if source == "figshare":
+        article_url = dataset_cfg["article_url"]
+        expected_files = dataset_cfg.get("expected_files", [])
+        output_dir = Path(dataset_cfg["output_dir"])
 
-    article_url = dataset_cfg["article_url"]
-    expected_files = dataset_cfg.get("expected_files", [])
-    output_dir = Path(dataset_cfg["output_dir"])
+        article_id = extract_article_id(article_url)
+        print(f"Article ID: {article_id}")
 
-    article_id = extract_article_id(article_url)
-    print(f"Article ID: {article_id}")
+        files = get_article_files(article_id)
+        print("Files in article:")
+        for f in files:
+            print(f"  - {f['name']} (id={f['id']})")
 
-    files = get_article_files(article_id)
-    print("Files in article:")
-    for f in files:
-        print(f"  - {f['name']} (id={f['id']})")
+        target_file = choose_target_file(files, expected_files)
+        print(f"Selected file: {target_file['name']}")
 
-    target_file = choose_target_file(files, expected_files)
-    print(f"Selected file: {target_file['name']}")
+        download_url = target_file["download_url"]
+        output_path = output_dir / target_file["name"]
 
-    download_url = target_file["download_url"]
-    output_path = output_dir / target_file["name"]
+        download_file(download_url, output_path)
 
-    download_file(download_url, output_path)
-
-    if output_path.suffix.lower() == ".zip":
-        unzip_dir = output_dir
-        unzip_dir.mkdir(parents=True, exist_ok=True)
-        unzip_file(output_path, unzip_dir)
+        if output_path.suffix.lower() == ".zip":
+            unzip_dir = output_dir
+            unzip_dir.mkdir(parents=True, exist_ok=True)
+            unzip_file(output_path, unzip_dir)
+            flatten_single_outer_folder(unzip_dir)
+            remove_zip_if_unused(output_path)
+    elif source == "kaggle":
+        download_from_kaggle(dataset_cfg)
+    else:
+        raise ValueError(
+            f"Source '{source}' chua duoc ho tro. Ho tro: figshare | kaggle."
+        )
 
     print("Done.")
 
