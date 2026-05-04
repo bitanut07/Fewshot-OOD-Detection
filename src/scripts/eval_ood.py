@@ -97,8 +97,9 @@ def _load_descriptions(config: Any) -> Dict[str, List[str]]:
     if os.path.exists(y):
         with open(y) as f:
             return yaml.safe_load(f) or {}
-    j = _get(config, "llm_descriptions", "glali_output_file",
-             default="data/prompts/class_descriptions.json")
+    j = _get(config, "llm_descriptions", "descriptions_json_file",
+             default=None) or _get(config, "llm_descriptions", "glali_output_file",
+                                    default="data/prompts/class_descriptions.json")
     if os.path.exists(j):
         with open(j) as f:
             return json.load(f) or {}
@@ -137,13 +138,17 @@ def _build_eval_loaders(
     id_classes = _get(config, "data", "id_classes", default=None)
     ood_classes = _get(config, "data", "ood_classes", default=None)
     image_size = int(_get(config, "data", "image_size", default=224))
+    img_mean = _get(config, "data", "image_mean", default=None)
+    img_std = _get(config, "data", "image_std", default=None)
     num_workers = int(_get(config, "data", "num_workers", default=4))
     pin = bool(_get(config, "data", "pin_memory", default=True))
     seed = int(_get(config, "experiment", "seed", default=42))
     batch_size = int(batch_size_override or _get(config, "eval", "batch_size",
                                                  default=_get(config, "train", "batch_size", default=16)))
 
-    transform_test = BoneXRayDataset.get_default_transform("test", image_size)
+    transform_test = BoneXRayDataset.get_default_transform(
+        "test", image_size, mean=img_mean, std=img_std,
+    )
 
     id_eval_ds = BoneXRayDataset(
         manifest_file=manifest, split="test",

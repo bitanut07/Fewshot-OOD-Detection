@@ -42,7 +42,7 @@ UNUSED_LABELS = [
 ]
 - Kết quả parse lưu vào `data/processed/data_processing/fracatlas.csv`.
 
-## File `splits_data.py`
+## File `splits_dataset.py`
 - Gộp 2 file CSV parse từ BTXRD và FracAtlas.
 - Tạo `manifest.csv` từ dữ liệu đã gộp.
 - `manifest.csv` được lưu tại:
@@ -100,7 +100,7 @@ IMG<mã dữ liệu><số thứ tự ảnh 5 chữ số><mã đa dạng>
 ## Thứ tự chạy
 1. Chạy file parse của BTXRD
 2. Chạy file parse của FracAtlas
-3. Chạy file `splits_data.py`
+3. Chạy file `splits_dataset.py`
 
 ## LLM description generation
 - Đăng nhập và Hugging-Face: chạy lệnh `huggingface-cli login`
@@ -205,6 +205,32 @@ python src/scripts/generate_llm_descriptions.py \
   --force
 ```
 
+# CLIP weights, tiền xử lý ảnh & tham chiếu glali
+
+## Vai trò thư mục `glali/`
+- Chỉ để **tham khảo** (Trainer Dassl, `clip_w_local`, config YAML trainer). Runtime của repo **không** `import glali`; trên nhiều clone thư mục có thể bị `.gitignore` — không coi là dependency build.
+
+## Lưu ý khi đối chiếu `glali/trainers/locproto_supc.py`
+- Trong `forward_backward`, nhánh **AMP** (`prec == "amp"`) gọi `self.model(image)` **không** truyền `labels`, unpack 5 tensor và **không** cộng `loss_id2` / `loss_supc` — khác nhánh fp32. Khi port ý tưởng, dùng nhánh fp32 làm chuẩn hoặc viết lại AMP cho đủ các loss.
+
+## Tải trọng số CLIP cùng URL công khai như glali (`clip_w_local/clip.py`)
+- Module `src/models/encoders/openai_clip_weights.py`: bảng URL Azure + kiểm tra SHA256 (cùng quy ước path trong URL như `_MODELS` / `_download` của glali).
+- `model.clip.pretrained` trong YAML:
+  - **`openai_public`** (hoặc `openai-azure`, `openai_official`): tải file `.pt` tương ứng, nạp qua **open_clip** với tên kiến trúc `*-quickgelu` (ví dụ checkpoint `ViT-B-16.pt` → model `ViT-B-16-quickgelu`). Chỉ có **6** backbone trong bảng glali: `RN50`, `RN101`, `RN50x4`, `RN50x16`, `ViT-B/32`, `ViT-B/16` (không có `ViT-B/8` trên URL này — với B/8 giữ `pretrained: openai` trong `configs/model/clip_vit_b8.yaml`).
+  - **`openai`**: tag tải weight mặc định của open_clip (CDN riêng thư viện).
+  - **Đường dẫn tệp `.pt`**: checkpoint cục bộ; người dùng chịu trách nhiệm khớp architecture.
+- Cache: biến môi trường `CLIP_OPENAI_CACHE` hoặc `~/.cache/clip`; có thể set `model.clip.weight_cache_dir` (null = dùng mặc định).
+- `CLIPImageEncoder` / `CLIPTextEncoder` gọi `resolve_open_clip_load_args(...)` rồi `open_clip.create_model_and_transforms` — vẫn dùng `forward_intermediates` cho đặc trưng local. `GLocalFSLOODModel` truyền `weight_cache_dir` từ config.
+
+## Chuẩn hóa ảnh khớp CLIP / open_clip
+- `BoneXRayDataset.get_default_transform(..., mean=, std=)` mặc định dùng **mean/std OpenAI CLIP** (trùng `INPUT.PIXEL_MEAN` / `PIXEL_STD` trong config tham chiếu glali), không dùng ImageNet cho luồng train/eval với CLIP.
+- `configs/default.yaml` và `configs/data/bone_xray.yaml` khai báo `data.image_mean` / `data.image_std`; `train_fsl.py` và `eval_ood.py` đọc và truyền vào dataset.
+
+## Config `model.clip` & mô tả phụ (JSON)
+- Backbone + `pretrained` + `freeze` + tùy chọn `weight_cache_dir` nằm dưới **`model.clip`** trong `configs/default.yaml` (đồng bộ với `configs/model/clip_vit_b16.yaml`).
+- File JSON mô tả (khi không có YAML): khóa **`llm_descriptions.descriptions_json_file`**; khóa cũ **`glali_output_file`** vẫn được script đọc để tương thích ngược.
+- Kích thước alignment/selector trong default: `alignment.image_local_dim` và `local_region_selector.score_dim` = **512** (khớp projection patch → không gian nhúng 512-D của open_clip).
+
 # Trainer (GLOCAL-FSL-OOD)
 
 ## Tổng quan các giai đoạn trainer
@@ -225,8 +251,9 @@ Pipeline trainer đã được hoàn thành, bám theo cấu trúc/logic của
 - Hỗ trợ `mode = id | ood | all` để tách ID-only, OOD-only hoặc lấy cả.
 - `class_names`, `id_classes`, `ood_classes` config-driven.
 - Tự map `label -> class_idx` và bỏ qua ảnh có label không nằm trong list.
-- Cung cấp `get_default_transform("train"|"test")` (Resize 224, flip,
-  rotate, normalize ImageNet).
+- Cung cấp `get_default_transform("train"|"test", image_size, mean=, std=)`:
+  Resize 224, flip/rotate (train), **normalize theo CLIP OpenAI** mặc định
+  hoặc theo `data.image_mean` / `data.image_std` từ config (đồng bộ glali `INPUT.PIXEL_*`).
 - Hỗ trợ optional `split_file` (one `name_id` per line) để cố định
   train/val/test.
 
@@ -305,7 +332,8 @@ File: `src/losses/total_loss.py`
   test-transform cho val/test subset, ood mode cho ood subset).
 - Stratified split theo class (val_ratio / test_ratio từ config).
 - Optional k-shot capping (`fewshot.k_shot > 0` → giữ k mẫu/class).
-- Load LLM descriptions YAML (fallback JSON của glali).
+- Load mô tả LLM: ưu tiên YAML (`llm_descriptions.output_file`), fallback JSON
+  (`descriptions_json_file` hoặc tên cũ `glali_output_file`).
 - Log dir / TB dir tự tạo theo `experiment_name`.
 - Flags:
   - `--config`      (bắt buộc) — experiment YAML
@@ -315,12 +343,16 @@ File: `src/losses/total_loss.py`
   - `--eval-only`   — bỏ qua train, chỉ test
 
 ### 9) Config bổ sung (`configs/default.yaml`)
-- Thêm `loss.ood_reg.weight` (mặc định `0.25`).
-- Thêm `loss.distill_img.weight` (mặc định `10.0`, khớp glali).
-- Thêm `loss.distill_text.weight` (mặc định `0.0`, bật thủ công).
-- Thêm `ood.topk = 50`, `ood.temperature = 1.0`.
-- Thêm block `experiment`, `paths`, `logging`, `data.manifest_file`,
+- `model.clip`: `backbone`, `pretrained` (`openai_public` | `openai` | path),
+  `freeze`, `weight_cache_dir` (tùy chọn).
+- `data.image_mean` / `data.image_std` cho normalize đồng bộ CLIP.
+- `loss.ood_reg.weight` (mặc định `0.25`).
+- `loss.distill_img.weight` (mặc định `10.0`, khớp glali).
+- `loss.distill_text.weight` (mặc định `0.0`, bật thủ công).
+- `ood.topk = 50`, `ood.temperature = 1.0`.
+- Block `experiment`, `paths`, `logging`, `data.manifest_file`,
   `data.val_ratio`, `data.test_ratio`, `data.num_workers`, `data.pin_memory`.
+- `llm_descriptions.descriptions_json_file` (+ tương thích `glali_output_file`).
 
 ## Lệnh chạy
 
@@ -387,6 +419,7 @@ python src/scripts/train_fsl.py --config configs/experiment/exp_full_model.yaml 
 ## Mapping logic với glali
 | glali (`locproto_supc.py`)            | Dự án hiện tại                                                            |
 | ------------------------------------- | ------------------------------------------------------------------------- |
+| `_MODELS` + `_download` (Azure `.pt`) | `openai_clip_weights.py` + `pretrained: openai_public` + open_clip load   |
 | `zs_img_encoder` (frozen copy)        | `GLocalFSLOODModel.teacher_image_encoder`                                 |
 | `loss_id = CE(output, label)`         | `loss_cls` trên `logits` (`TotalLoss.weight_cls`)                         |
 | `loss_id2 = CE(output_local, label)`  | `loss_local_alignment` (mean-pool local_logits, `TotalLoss.weight_la`)    |
@@ -399,8 +432,8 @@ python src/scripts/train_fsl.py --config configs/experiment/exp_full_model.yaml 
 
 ## Smoke test đã chạy
 - Load `manifest.csv`: ✅ 5,764 ID samples + 10,384 OOD samples.
-- Forward pass model (CLIP ViT-B/16, CPU): ✅ trả về đủ `logits` `[B,8]`,
-  `local_logits` `[B,196,8]`, `global_feat` `[B,512]`.
+- Forward pass model (CLIP ViT-B/16 qua open_clip, CPU): ✅ trả về đủ `logits` `[B,8]`,
+  `local_logits` `[B,196,8]`, `global_feat` `[B,512]`. (Có thể dùng `pretrained: openai` hoặc `openai_public` sau khi tải `.pt`.)
 - 1-epoch training end-to-end (CPU, 3 batches): ✅ loss giảm, accuracy
   update, checkpoint ghi ra `outputs/runs/full_model/checkpoints/`.
 - Test stage với 3 OOD methods (msp/glmcm/local_mcm): ✅ trả về

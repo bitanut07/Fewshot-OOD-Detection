@@ -77,8 +77,9 @@ def _load_descriptions(config: Any, logger) -> Dict[str, List[str]]:
             data = yaml.safe_load(f) or {}
         logger.info(f"Loaded descriptions (YAML): {y}")
         return data
-    j = _get(config, "llm_descriptions", "glali_output_file",
-             default="data/prompts/class_descriptions.json")
+    j = _get(config, "llm_descriptions", "descriptions_json_file",
+             default=None) or _get(config, "llm_descriptions", "glali_output_file",
+                                    default="data/prompts/class_descriptions.json")
     if os.path.exists(j):
         import json
         with open(j) as f:
@@ -134,6 +135,8 @@ def _build_loaders(config: Any, logger) -> Dict[str, Optional[DataLoader]]:
     id_classes = _get(config, "data", "id_classes", default=None)
     ood_classes = _get(config, "data", "ood_classes", default=None)
     image_size = int(_get(config, "data", "image_size", default=224))
+    img_mean = _get(config, "data", "image_mean", default=None)
+    img_std = _get(config, "data", "image_std", default=None)
     batch_size = int(_get(config, "train", "batch_size", default=4))
     num_workers = int(_get(config, "data", "num_workers", default=4))
     pin = bool(_get(config, "data", "pin_memory", default=True))
@@ -144,19 +147,25 @@ def _build_loaders(config: Any, logger) -> Dict[str, Optional[DataLoader]]:
         manifest_file=manifest, split="train",
         class_names=class_names, id_classes=id_classes, ood_classes=ood_classes,
         mode="id", image_size=image_size,
-        transform=BoneXRayDataset.get_default_transform("train", image_size),
+        transform=BoneXRayDataset.get_default_transform(
+            "train", image_size, mean=img_mean, std=img_std,
+        ),
     )
     id_eval = BoneXRayDataset(
         manifest_file=manifest, split="test",
         class_names=class_names, id_classes=id_classes, ood_classes=ood_classes,
         mode="id", image_size=image_size,
-        transform=BoneXRayDataset.get_default_transform("test", image_size),
+        transform=BoneXRayDataset.get_default_transform(
+            "test", image_size, mean=img_mean, std=img_std,
+        ),
     )
     ood_eval = BoneXRayDataset(
         manifest_file=manifest, split="test",
         class_names=class_names, id_classes=id_classes, ood_classes=ood_classes,
         mode="ood", image_size=image_size,
-        transform=BoneXRayDataset.get_default_transform("test", image_size),
+        transform=BoneXRayDataset.get_default_transform(
+            "test", image_size, mean=img_mean, std=img_std,
+        ),
     )
 
     # Stratified train/val/test split on the ID set (shared indices for

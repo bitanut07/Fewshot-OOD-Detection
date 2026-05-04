@@ -35,6 +35,14 @@ model:
       base_url: null
       timeout: 60.0
 
+  # CLIP vision+text (open_clip). ``openai_public`` = same Azure .pt URLs + SHA check as glali/clip_w_local/clip.py
+  clip:
+    backbone: "ViT-B/16"
+    pretrained: "openai_public"
+    freeze: true
+    # Optional; default: env CLIP_OPENAI_CACHE or ~/.cache/clip
+    weight_cache_dir: null
+
 # =============================================================================
 # LLM Description Generation Configuration (OFFLINE)
 # =============================================================================
@@ -138,7 +146,8 @@ llm_descriptions:
   # Output files
   output_file: "data/prompts/class_descriptions.yaml"
   questions_output_file: "data/prompts/class_questions.yaml"
-  glali_output_file: "data/prompts/class_descriptions.json"
+  # Secondary JSON descriptions path (YAML is preferred when present)
+  descriptions_json_file: "data/prompts/class_descriptions.json"
 
   generation_batch_size: 1
   cache_generated: true
@@ -147,11 +156,6 @@ llm_descriptions:
 # Model Module Configuration
 # =============================================================================
 model_type: "glocal_fsl_ood"
-
-clip:
-  backbone: "ViT-B/16"
-  pretrained: "openai"
-  freeze: true
 
 text_refiner:
   text_dim: 512
@@ -179,7 +183,7 @@ local_contrastive:
   sim_max: 1.0
 
 local_region_selector:
-  score_dim: 768
+  score_dim: 512
   selection_mode: "similarity"
   top_k: 4
   bottom_k: 4
@@ -196,7 +200,7 @@ alignment:
   learnable_weights: false
   text_embed_dim: 512
   image_global_dim: 512
-  image_local_dim: 768
+  image_local_dim: 512
 
 # =============================================================================
 # Loss Weights
@@ -268,8 +272,7 @@ ood:
   method: "msp"
   threshold_strategy: "percentile"
   percentile: 95
-  # Top-k used by entropy_select_topk (patches whose top-k does NOT
-  # contain the GT label are pushed toward uniform — glali LoCoOp)
+  # Top-k for entropy regularization on patch scores (non-GT top-k mass → uniform)
   topk: 50
   temperature: 1.0
 
@@ -300,3 +303,6 @@ data:
   test_ratio: 0.15
   num_workers: 4
   pin_memory: true
+  # Match open_clip / CLIP preprocessing (224 RGB)
+  image_mean: [0.48145466, 0.4578275, 0.40821073]
+  image_std: [0.26862954, 0.26130258, 0.27577711]

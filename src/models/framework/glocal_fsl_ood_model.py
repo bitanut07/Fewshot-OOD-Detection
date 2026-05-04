@@ -89,10 +89,15 @@ class GLocalFSLOODModel(nn.Module):
         backbone = _get(clip_cfg, "backbone", default="ViT-B/16")
         pretrained = _get(clip_cfg, "pretrained", default="openai")
         freeze_clip = _get(clip_cfg, "freeze", default=True)
+        clip_cache = _get(clip_cfg, "weight_cache_dir", default=None)
 
         # 1. CLIP Image Encoder (student)
         self.image_encoder = CLIPImageEncoder(
-            backbone=backbone, pretrained=pretrained, freeze=freeze_clip, device=self.device,
+            backbone=backbone,
+            pretrained=pretrained,
+            freeze=freeze_clip,
+            device=self.device,
+            weight_cache_dir=clip_cache,
         )
         self.embed_dim = self.image_encoder.embed_dim
         self.local_dim = self.image_encoder.local_dim
@@ -109,7 +114,11 @@ class GLocalFSLOODModel(nn.Module):
 
         # 3. CLIP Text Encoder (frozen)
         self.text_encoder = CLIPTextEncoder(
-            backbone=backbone, pretrained=pretrained, freeze=True, device=self.device,
+            backbone=backbone,
+            pretrained=pretrained,
+            freeze=True,
+            device=self.device,
+            weight_cache_dir=clip_cache,
         )
 
         # 4. Build per-class text embeddings + prototypes

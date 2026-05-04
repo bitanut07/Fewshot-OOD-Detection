@@ -18,7 +18,7 @@ configured ``id_classes`` / ``ood_classes`` index lists.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Sequence, Tuple, Union
 
 import pandas as pd
 import torch
@@ -40,8 +40,13 @@ DEFAULT_CLASS_NAMES = [
 DEFAULT_ID_CLASSES = list(range(6))
 DEFAULT_OOD_CLASSES = [6, 7]
 
+# ImageNet stats (legacy / non-CLIP pipelines)
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
+
+# OpenAI CLIP / open_clip preprocessing (matches reference glali INPUT.PIXEL_*)
+OPENAI_CLIP_MEAN = (0.48145466, 0.4578275, 0.40821073)
+OPENAI_CLIP_STD = (0.26862954, 0.26130258, 0.27577711)
 
 
 class BoneXRayDataset(Dataset):
@@ -173,9 +178,33 @@ class BoneXRayDataset(Dataset):
         return [self.class_names[i] for i in self.ood_classes]
 
     @staticmethod
-    def get_default_transform(split: str = "train", image_size: int = 224) -> T.Compose:
-        """Default torchvision transform pipeline."""
-        normalize = T.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+    def _to_norm_tuples(
+        mean: Optional[Union[Sequence[float], Tuple[float, ...]]],
+        std: Optional[Union[Sequence[float], Tuple[float, ...]]],
+    ) -> Tuple[Tuple[float, float, float], Tuple[float, float, float]]:
+        """Resolve normalization; default to OpenAI CLIP stats for open_clip models."""
+        if mean is not None and std is not None:
+            m = tuple(float(x) for x in mean)
+            s = tuple(float(x) for x in std)
+            if len(m) != 3 or len(s) != 3:
+                raise ValueError("image_mean and image_std must each have length 3")
+            return m, s
+        return OPENAI_CLIP_MEAN, OPENAI_CLIP_STD
+
+    @staticmethod
+    def get_default_transform(
+        split: str = "train",
+        image_size: int = 224,
+        mean: Optional[Union[Sequence[float], Tuple[float, ...]]] = None,
+        std: Optional[Union[Sequence[float], Tuple[float, ...]]] = None,
+    ) -> T.Compose:
+        """Build resize / augment / normalize pipeline.
+
+        When ``mean`` and ``std`` are omitted, uses OpenAI CLIP normalization so
+        inputs match ``open_clip.create_model_and_transforms`` (ViT-B/16, etc.).
+        """
+        m, s = BoneXRayDataset._to_norm_tuples(mean, std)
+        normalize = T.Normalize(mean=m, std=s)
         if split == "train":
             return T.Compose([
                 T.Resize((image_size, image_size)),

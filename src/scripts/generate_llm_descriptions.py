@@ -147,7 +147,11 @@ def main():
     # ── Output paths ─────────────────────────────────────────────────────
     questions_out = desc_cfg.get("questions_output_file", "data/prompts/class_questions.yaml")
     descriptions_out = desc_cfg.get("output_file", "data/prompts/class_descriptions.yaml")
-    json_out = desc_cfg.get("glali_output_file") or str(Path(descriptions_out).with_suffix(".json"))
+    json_out = (
+        desc_cfg.get("descriptions_json_file")
+        or desc_cfg.get("glali_output_file")
+        or str(Path(descriptions_out).with_suffix(".json"))
+    )
 
     # ── Dataset description ──────────────────────────────────────────────
     dataset_desc = desc_cfg.get(
