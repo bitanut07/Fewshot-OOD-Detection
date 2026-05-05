@@ -1,0 +1,90 @@
+# =============================================================================
+# MAGLA-CLIP: Global-Local Alignment + Text Refinement + Local Contrastive
+# Matches the reference evaluation tables (GLAli / MAGLA-CLIP architecture)
+#
+# Architecture:
+#   - CLIP ViT-B/16 (frozen, OpenAI public weights)
+#   - Last ViT attention block unfrozen (image_encoder.resblocks[-1].attn)
+#   - Bonder / Text Refiner (trainable)
+#   - Local Contrastive (SupCon on top-k / bottom-k patches)
+#   - Global-Local Aligner
+#   - Teacher (frozen copy) for distillation
+#
+# Training: SGD lr=0.01, cosine LR, 200 epochs, batch 32 (glali recipe)
+# =============================================================================
+includes:
+  - "model/clip_vit_b16.yaml"
+  - "model/llm_qwen.yaml"
+  - "model/text_refiner.yaml"
+  - "model/local_contrastive.yaml"
+  - "model/alignment.yaml"
+  - "data/bone_xray.yaml"
+  - "train/fewshot_8shot.yaml"
+
+experiment_name: "magla_clip"
+
+llm_descriptions:
+  num_descriptions_per_class: 50
+  use_template_prompt: true
+
+model:
+  clip:
+    backbone: "ViT-B/16"
+    pretrained: "openai_public"
+    freeze: true
+  text_refiner:
+    trainable: true
+    alpha: 0.5
+    num_layers: 2
+    num_heads: 8
+    hidden_dim: 512
+    dropout: 0.1
+  local_contrastive:
+    trainable: true
+    top_k: 4
+    bottom_k: 4
+    temperature: 0.5
+  alignment:
+    alpha_global: 0.5
+    alpha_local: 0.5
+    learnable_weights: false
+    logit_temperature: 1.0
+
+train:
+  epochs: 200
+  batch_size: 32
+  optimizer:
+    type: "sgd"
+    lr: 0.01
+    momentum: 0.9
+    weight_decay: 0.0
+  scheduler:
+    type: "CosineAnnealingLR"
+    T_max: 200
+    eta_min: 0.000001
+  warmup_epochs: 1
+  warmup_cons_lr: 0.00001
+  mixed_precision: true
+  early_stopping_patience: 20
+
+ood:
+  topk: 50
+  temperature: 1.0
+
+loss:
+  classification:
+    weight: 1.0
+  global_alignment:
+    weight: 1.0
+  local_alignment:
+    weight: 1.0
+  local_contrastive:
+    weight: 0.5
+  text_refinement:
+    weight: 0.1
+  ood_reg:
+    weight: 0.25
+  distill_img:
+    weight: 10.0
+  distill_text:
+    weight: 25.0

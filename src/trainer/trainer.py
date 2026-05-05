@@ -73,13 +73,15 @@ def _build_scheduler(optimizer, cfg, num_epochs: int) -> Optional[Any]:
 
     if name in ("cosine", "cosineannealinglr"):
         base_lr = optimizer.param_groups[0]["lr"]
+        warmup_cons_lr = float(_get(cfg, "train", "warmup_cons_lr", default=0.0))
 
         def lr_lambda(epoch: int) -> float:
             if warmup > 0 and epoch < warmup:
+                if warmup_cons_lr > 0:
+                    return warmup_cons_lr / base_lr
                 return (epoch + 1) / float(warmup)
             progress = (epoch - warmup) / max(1, (T_max - warmup))
             cos = 0.5 * (1.0 + math.cos(math.pi * min(1.0, max(0.0, progress))))
-            # Blend base_lr → eta_min via cosine
             factor = (eta_min + (base_lr - eta_min) * cos) / base_lr
             return float(factor)
 
@@ -186,9 +188,16 @@ class Trainer:
             )
 
     def save(self, epoch: int, val_metric: float, is_best: bool = False, tag: Optional[str] = None) -> None:
+        # Only persist trainable module weights (not frozen CLIP encoders).
+        # Frozen encoders are rebuilt from pretrained weights at model construction.
+        if hasattr(self.model, "trainable_modules"):
+            model_sd = self.model.trainable_modules.state_dict()
+        else:
+            model_sd = self.model.state_dict()
+
         state = {
             "epoch": epoch,
-            "model_state_dict": self.model.state_dict(),
+            "model_state_dict": model_sd,
             "optimizer_state_dict": self.optimizer.state_dict(),
             "scheduler_state_dict": self.scheduler.state_dict() if self.scheduler else None,
             "scaler_state_dict": self.scaler.state_dict() if self.scaler is not None else None,
@@ -197,6 +206,7 @@ class Trainer:
             "global_step": self.global_step,
             "val_metric": val_metric,
             "config": self.config.to_dict() if hasattr(self.config, "to_dict") else None,
+            "checkpoint_format": "trainable_only",
         }
         # Default: always overwrite 'last.pt'. 'best.pt' is written by
         # save_checkpoint when is_best=True. No per-epoch files hit disk.

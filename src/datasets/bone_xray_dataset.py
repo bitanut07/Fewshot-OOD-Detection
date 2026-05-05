@@ -26,6 +26,13 @@ from PIL import Image
 import torchvision.transforms as T
 from torch.utils.data import Dataset
 
+try:
+    from torchvision.transforms import InterpolationMode
+    BICUBIC = InterpolationMode.BICUBIC
+except ImportError:
+    from PIL import Image as _PIL
+    BICUBIC = _PIL.BICUBIC
+
 
 DEFAULT_CLASS_NAMES = [
     "giant cell tumor",
@@ -207,14 +214,18 @@ class BoneXRayDataset(Dataset):
         normalize = T.Normalize(mean=m, std=s)
         if split == "train":
             return T.Compose([
-                T.Resize((image_size, image_size)),
+                T.RandomResizedCrop(
+                    image_size,
+                    scale=(0.8, 1.0),
+                    interpolation=BICUBIC,
+                ),
                 T.RandomHorizontalFlip(p=0.5),
-                T.RandomRotation(degrees=10),
                 T.ToTensor(),
                 normalize,
             ])
         return T.Compose([
-            T.Resize((image_size, image_size)),
+            T.Resize(image_size, interpolation=BICUBIC),
+            T.CenterCrop(image_size),
             T.ToTensor(),
             normalize,
         ])

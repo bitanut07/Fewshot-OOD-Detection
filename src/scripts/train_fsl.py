@@ -284,7 +284,10 @@ def main() -> None:
     model.freeze_encoders()
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total = sum(p.numel() for p in model.parameters())
-    logger.info(f"Model params: total={total:,} trainable={trainable:,}")
+    logger.info(
+        f"Model trainable modules: {total:,} params ({trainable:,} trainable) "
+        f"| CLIP encoders: separate (frozen, not in state_dict)"
+    )
 
     # ---- trainer ----
     trainer = Trainer(

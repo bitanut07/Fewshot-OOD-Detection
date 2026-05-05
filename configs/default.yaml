@@ -227,20 +227,22 @@ loss:
 
 # =============================================================================
 # Training Configuration
-# Few-shot k=1 → short schedule + mixed precision to reduce overfitting
+# Matches glali LocProto recipe: SGD + cosine LR + 200 epochs + batch 32
 # =============================================================================
 train:
-  epochs: 40
-  batch_size: 4
+  epochs: 200
+  batch_size: 32
   optimizer:
-    type: "AdamW"
-    lr: 0.0002
-    weight_decay: 0.01
+    type: "sgd"
+    lr: 0.01
+    momentum: 0.9
+    weight_decay: 0.0
   scheduler:
     type: "CosineAnnealingLR"
-    T_max: 40
+    T_max: 200
     eta_min: 0.000001
-  warmup_epochs: 5
+  warmup_epochs: 1
+  warmup_cons_lr: 0.00001
   grad_clip: 1.0
   mixed_precision: true
   ema: false

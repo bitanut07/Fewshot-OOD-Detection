@@ -1,0 +1,3 @@
+experiment_name: "magla_clip_k90_s8"
+ood:
+  topk: 90

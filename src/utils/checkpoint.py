@@ -112,9 +112,16 @@ def load_checkpoint(
 ):
     if not os.path.exists(checkpoint_path):
         raise FileNotFoundError(checkpoint_path)
-    ckpt = torch.load(checkpoint_path, map_location=device or torch.device("cpu"))
+    ckpt = torch.load(checkpoint_path, map_location=device or torch.device("cpu"), weights_only=False)
+
     if model is not None and not load_finetuned_only:
-        model.load_state_dict(ckpt.get("model_state_dict", ckpt))
+        sd = ckpt.get("model_state_dict", ckpt)
+        fmt = ckpt.get("checkpoint_format", "full")
+        if fmt == "trainable_only" and hasattr(model, "trainable_modules"):
+            model.trainable_modules.load_state_dict(sd, strict=True)
+        else:
+            model.load_state_dict(sd, strict=False)
+
     if optimizer and "optimizer_state_dict" in ckpt:
         optimizer.load_state_dict(ckpt["optimizer_state_dict"])
     return ckpt

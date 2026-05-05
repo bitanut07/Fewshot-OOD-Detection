@@ -1,0 +1,15 @@
+# Ablation (2): Image + Text encoder + chỉ mô tả mặc định (không LLM)
+# → trỏ file mô tả rỗng; tắt text refiner & local contrastive.
+experiment_name: "ablation_02_template_only"
+llm_descriptions:
+  output_file: "data/prompts/ablation_template_only.yaml"
+model:
+  text_refiner:
+    trainable: false
+  local_contrastive:
+    trainable: false
+loss:
+  text_refinement:
+    weight: 0.0
+  local_contrastive:
+    weight: 0.0

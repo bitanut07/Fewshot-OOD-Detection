@@ -1,0 +1,10 @@
+# Ablation (4): Text Refinement bật; “Adapter” (local contrastive + vùng cục bộ) tắt — map vào local_contrastive
+experiment_name: "ablation_04_refiner_no_local"
+model:
+  local_contrastive:
+    trainable: false
+loss:
+  local_contrastive:
+    weight: 0.0
+  ood_reg:
+    weight: 0.0

@@ -112,15 +112,15 @@ ssh -i ~/.ssh/id_ed25519 -p 33528 root@116.109.174.203
 
 scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/data/prompts/class_descriptions.json .
 
-scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/outputs/runs/full_model/checkpoints/best.pt .
+scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/outputs/runs/magla_clip/checkpoints/best.pt .
 
-scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/outputs/eval/full_model.json .
+scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/outputs/eval/magla_clip.json .
 
 cd Fewshot-OOD-Detection
 
 Lệnh generate descriptions:
 
-python src/scripts/generate_llm_descriptions.py --config configs/experiment/exp_full_model.yaml --num_attributes 6 --num_descriptions 8 --force
+python src/scripts/generate_llm_descriptions.py --config configs/experiment/exp_magla_clip.yaml --num_attributes 6 --num_descriptions 8 --force
 
 # Descriptions Logic
 
@@ -168,18 +168,18 @@ python src/scripts/generate_llm_descriptions.py --config configs/experiment/exp_
 
 ### 1) Generate cơ bản (cache-first)
 ```bash
-python src/scripts/generate_llm_descriptions.py --config configs/experiment/exp_full_model.yaml
+python src/scripts/generate_llm_descriptions.py --config configs/experiment/exp_magla_clip.yaml
 ```
 
 ### 2) Force generate lại từ đầu
 ```bash
-python src/scripts/generate_llm_descriptions.py --config configs/experiment/exp_full_model.yaml --force
+python src/scripts/generate_llm_descriptions.py --config configs/experiment/exp_magla_clip.yaml --force
 ```
 
 ### 3) Chạy đầy đủ với quality report
 ```bash
 python src/scripts/generate_llm_descriptions.py \
-  --config configs/experiment/exp_full_model.yaml \
+  --config configs/experiment/exp_magla_clip.yaml \
   --num_questions 10 \
   --num_attributes 6 \
   --num_descriptions 8 \
@@ -191,7 +191,7 @@ python src/scripts/generate_llm_descriptions.py \
 ### 4) Chạy deterministic để dễ reproducible
 ```bash
 python src/scripts/generate_llm_descriptions.py \
-  --config configs/experiment/exp_full_model.yaml \
+  --config configs/experiment/exp_magla_clip.yaml \
   --seed 42 \
   --deterministic \
   --force
@@ -200,7 +200,7 @@ python src/scripts/generate_llm_descriptions.py \
 ### 5) Reuse câu hỏi cũ
 ```bash
 python src/scripts/generate_llm_descriptions.py \
-  --config configs/experiment/exp_full_model.yaml \
+  --config configs/experiment/exp_magla_clip.yaml \
   --skip_questions \
   --force
 ```
@@ -231,6 +231,38 @@ python src/scripts/generate_llm_descriptions.py \
 - File JSON mô tả (khi không có YAML): khóa **`llm_descriptions.descriptions_json_file`**; khóa cũ **`glali_output_file`** vẫn được script đọc để tương thích ngược.
 - Kích thước alignment/selector trong default: `alignment.image_local_dim` và `local_region_selector.score_dim` = **512** (khớp projection patch → không gian nhúng 512-D của open_clip).
 
+## MAGLA-CLIP — khớp bảng đánh giá, augment & checkpoint nhẹ
+
+Các thay đổi này căn cứ bảng tham chiếu (200 epoch, ~2M tham số trainable, MAGLA-CLIP) và yêu cầu **không** lưu checkpoint ~1.2GB như khi serialize toàn bộ CLIP.
+
+### Experiment khuyến nghị
+- **`configs/experiment/exp_magla_clip.yaml`** — pipeline đầy đủ (CLIP + LLM descriptions + text refiner + local contrastive + alignment), few-shot qua `includes` → `train/fewshot_8shot.yaml` (đổi sang `fewshot_1shot` / `fewshot_4shot` bằng `--override` nếu cần).
+- **`configs/experiment/exp_full_model.yaml`** — vẫn tồn tại cho tương thích; **không** khuyến nghị làm “mặc định” train nếu đã chuyển sang recipe MAGLA-CLIP (trùng module, khác tên thí nghiệm).
+
+### Recipe train (theo glali / bảng 200 epoch)
+- **Optimizer:** SGD `lr=0.01`, `momentum=0.9`, `weight_decay=0.0` (thay vì AdamW ngắn hạn cũ).
+- **Lịch:** `epochs: 200`, `batch_size: 32`, scheduler **cosine** với `T_max` khớp số epoch.
+- **Warmup:** `warmup_epochs: 1`; có `train.warmup_cons_lr` (vd `1e-5`) → epoch warmup dùng LR **hằng số** (giống glali `WARMUP_TYPE: constant`), không chỉ linear ramp.
+- File merge: `configs/default.yaml`, `configs/train/fewshot_{0,1,4,8}shot.yaml`.
+
+### Augment khi train/eval (CLIP — khớp glali `INPUT.TRANSFORMS`)
+- **Train:** `RandomResizedCrop(224, scale=(0.8, 1.0), interpolation=BICUBIC)` + `RandomHorizontalFlip(0.5)` → **không** dùng `RandomRotation` trên luồng này (xoay mạnh hơn nằm ở pipeline tiền xử lý ảnh offline `image_processing`, không trùng augment train).
+- **Val/Test:** `Resize(224, BICUBIC)` + `CenterCrop(224)` + normalize OpenAI CLIP (mean/std như trên).
+
+### Checkpoint chỉ lưu phần trainable (~ vài chục MB, không ~1.2GB)
+
+**Nguyên nhân file `.pt` ~1.2GB (trước đây):** `state_dict` chứa student CLIP (~329MB visual), teacher deep-copy (~329MB), và text encoder wrap full open_clip (~571MB) — phần lớn **frozen**, không cần persist.
+
+**Đã làm:**
+1. **`GLocalFSLOODModel`:** `image_encoder`, `text_encoder`, và teacher (`_teacher_image_encoder`) gán bằng `object.__setattr__(...)` — **không** là con `nn.Module` → không vào `model.state_dict()`; override `to()` / `cuda()` để chuyển device đúng.
+2. **`Trainer.save()`:** ghi `model.trainable_modules.state_dict()` (text_refiner, region_selector, local_contrastive, aligner) + metadata; cờ `checkpoint_format: "trainable_only"`.
+3. **`load_checkpoint()`:** nếu format `trainable_only` và model có `trainable_modules` → `load_state_dict` vào đó; CLIP vẫn nạp lại từ `pretrained` khi dựng model (giống glali chỉ lưu adapter/attention trainable).
+
+**Quy mô điển hình:** ~**30–40 MB** mỗi file `best.pt` / `last.pt` (fp32 trainable + optimizer state), thay vì ~1.2GB.
+
+### Tham số trainable vs bảng paper (~2M)
+Phần **trainable** trong repo (refiner + aligner + local heads, v.v.) có thứ tự **triệu tham số** cùng máy đơn vị với bảng MAGLA-CLIP; CLIP backbone **không** tính vào “trainable params” của paper và **không** nên nằm trong checkpoint đã fine-tune khi backbone frozen.
+
 # Trainer (GLOCAL-FSL-OOD)
 
 ## Tổng quan các giai đoạn trainer
@@ -252,15 +284,14 @@ Pipeline trainer đã được hoàn thành, bám theo cấu trúc/logic của
 - `class_names`, `id_classes`, `ood_classes` config-driven.
 - Tự map `label -> class_idx` và bỏ qua ảnh có label không nằm trong list.
 - Cung cấp `get_default_transform("train"|"test", image_size, mean=, std=)`:
-  Resize 224, flip/rotate (train), **normalize theo CLIP OpenAI** mặc định
-  hoặc theo `data.image_mean` / `data.image_std` từ config (đồng bộ glali `INPUT.PIXEL_*`).
+  **Train:** `RandomResizedCrop` + `RandomHorizontalFlip` + normalize OpenAI CLIP (hoặc `data.image_mean` / `std`).
+  **Val/Test:** `Resize` + `CenterCrop` + normalize (đồng bộ glali `INPUT.PIXEL_*` / transform CLIP).
 - Hỗ trợ optional `split_file` (one `name_id` per line) để cố định
   train/val/test.
 
 ### 2) Model framework (bổ sung để hỗ trợ trainer)
 File: `src/models/framework/glocal_fsl_ood_model.py`
-- Thêm **teacher image encoder** (deep-copy của student, frozen) giống
-  `zs_img_encoder` của glali — dùng cho distillation loss.
+- **Teacher image encoder** (`_teacher_image_encoder`): deep-copy của student, frozen, giống `zs_img_encoder` của glali — dùng cho distillation loss. Lưu **ngoài** cây `nn.Module` để không duplicate trong checkpoint (xem mục “Checkpoint chỉ lưu phần trainable”).
 - Forward pass trả về đầy đủ các trường cần cho trainer:
   - `logits`           — global + local kết hợp (cho classification chính)
   - `global_logits`    — chỉ global branch
@@ -315,8 +346,9 @@ File: `src/losses/total_loss.py`
   predictions, labels, ood.{msp,glmcm,local_mcm}`.
 
 ### 7) Orchestrator `Trainer` (`src/trainer/trainer.py`)
-- Build optimizer (AdamW/Adam/SGD) + scheduler (Cosine với linear warmup,
-  Step, hoặc None) từ config.
+- Build optimizer (AdamW/Adam/SGD) + scheduler (Cosine với warmup:
+  linear ramp **hoặc** constant LR qua `train.warmup_cons_lr`, Step, hoặc None) từ config.
+- **`save()`:** mặc định chỉ serialize `trainable_modules` + `checkpoint_format: "trainable_only"` (checkpoint nhẹ; CLIP tái tạo khi load model).
 - Quản lý AMP scaler, grad clip, seed, checkpoint dir.
 - `train()`:
   - lặp epoch → train → optional validate → optional save checkpoint
@@ -345,6 +377,9 @@ File: `src/losses/total_loss.py`
 ### 9) Config bổ sung (`configs/default.yaml`)
 - `model.clip`: `backbone`, `pretrained` (`openai_public` | `openai` | path),
   `freeze`, `weight_cache_dir` (tùy chọn).
+- `train`: recipe MAGLA-CLIP — `epochs: 200`, `batch_size: 32`, optimizer **SGD**
+  (`lr`, `momentum`, `weight_decay`), `scheduler` cosine `T_max` khớp epoch,
+  `warmup_epochs`, **`warmup_cons_lr`** (warmup hằng số, giống glali).
 - `data.image_mean` / `data.image_std` cho normalize đồng bộ CLIP.
 - `loss.ood_reg.weight` (mặc định `0.25`).
 - `loss.distill_img.weight` (mặc định `10.0`, khớp glali).
@@ -373,28 +408,28 @@ File: `src/losses/total_loss.py`
 ### Train + test một lượt
 ```bash
 python src/scripts/train_fsl.py \
-  --config configs/experiment/exp_full_model.yaml \
+  --config configs/experiment/exp_magla_clip.yaml \
   --do-test
 ```
 
 ### Train với override few-shot
 ```bash
 python src/scripts/train_fsl.py \
-  --config configs/experiment/exp_full_model.yaml \
+  --config configs/experiment/exp_magla_clip.yaml \
   --override configs/train/fewshot_4shot.yaml
 ```
 
 ### Resume training
 ```bash
 python src/scripts/train_fsl.py \
-  --config configs/experiment/exp_full_model.yaml \
-  --resume outputs/runs/full_model/checkpoints/best.pt
+  --config configs/experiment/exp_magla_clip.yaml \
+  --resume outputs/runs/magla_clip/checkpoints/best.pt
 ```
 
 ### Eval-only (dùng best checkpoint)
 ```bash
 python src/scripts/train_fsl.py \
-  --config configs/experiment/exp_full_model.yaml \
+  --config configs/experiment/exp_magla_clip.yaml \
   --eval-only --do-test
 ```
 
@@ -413,14 +448,14 @@ python src/scripts/splits_dataset.py
 python src/scripts/build_fewshot_split.py --config configs/data/splits_data.yaml
 
 # 4) Train + test
-python src/scripts/train_fsl.py --config configs/experiment/exp_full_model.yaml --do-test
+python src/scripts/train_fsl.py --config configs/experiment/exp_magla_clip.yaml --do-test
 ```
 
 ## Mapping logic với glali
 | glali (`locproto_supc.py`)            | Dự án hiện tại                                                            |
 | ------------------------------------- | ------------------------------------------------------------------------- |
 | `_MODELS` + `_download` (Azure `.pt`) | `openai_clip_weights.py` + `pretrained: openai_public` + open_clip load   |
-| `zs_img_encoder` (frozen copy)        | `GLocalFSLOODModel.teacher_image_encoder`                                 |
+| `zs_img_encoder` (frozen copy)        | `GLocalFSLOODModel._teacher_image_encoder` (không trong `state_dict`)     |
 | `loss_id = CE(output, label)`         | `loss_cls` trên `logits` (`TotalLoss.weight_cls`)                         |
 | `loss_id2 = CE(output_local, label)`  | `loss_local_alignment` (mean-pool local_logits, `TotalLoss.weight_la`)    |
 | `loss_distil_img`                     | `loss_distill_img` (L1 teacher↔student global feat)                       |
@@ -435,7 +470,7 @@ python src/scripts/train_fsl.py --config configs/experiment/exp_full_model.yaml 
 - Forward pass model (CLIP ViT-B/16 qua open_clip, CPU): ✅ trả về đủ `logits` `[B,8]`,
   `local_logits` `[B,196,8]`, `global_feat` `[B,512]`. (Có thể dùng `pretrained: openai` hoặc `openai_public` sau khi tải `.pt`.)
 - 1-epoch training end-to-end (CPU, 3 batches): ✅ loss giảm, accuracy
-  update, checkpoint ghi ra `outputs/runs/full_model/checkpoints/`.
+  update, checkpoint ghi ra `outputs/runs/<experiment_name>/checkpoints/` — file **`best.pt` / `last.pt` nhẹ** (chỉ `trainable_modules`, cỡ ~30–40MB), không còn ~1.2GB.
 - Test stage với 3 OOD methods (msp/glmcm/local_mcm): ✅ trả về
   AUROC/AUPR/FPR cho từng method.
 
@@ -469,7 +504,7 @@ Hoàn chỉnh lại từ script cũ (dùng API đã biến mất). Giờ:
   (chung seed) → cùng tập test như lúc train.
 - Build **OOD loader** từ `mode="ood"` của `BoneXRayDataset`
   (có thể tắt bằng `--no-ood`).
-- Dựng `GLocalFSLOODModel` + `load_checkpoint(...)` từ file `.pt`.
+- Dựng `GLocalFSLOODModel` + `load_checkpoint(...)` từ file `.pt` (định dạng `trainable_only`: chỉ nạp vào `trainable_modules`; CLIP khởi tạo lại từ `pretrained`).
 - Gọi `src/trainer/test.test(...)` để tính:
   - ID classification: `accuracy, precision, recall, f1_score, auroc`.
   - OOD detection song song 3 phương pháp: `msp`, `glmcm`, `local_mcm`
@@ -491,26 +526,26 @@ Ví dụ lệnh:
 ```bash
 # Eval chuẩn bằng best checkpoint
 python src/scripts/eval_ood.py \
-  --config configs/experiment/exp_full_model.yaml \
-  --checkpoint outputs/runs/full_model/checkpoints/best.pt
+  --config configs/experiment/exp_magla_clip.yaml \
+  --checkpoint outputs/runs/magla_clip/checkpoints/best.pt
 
 # Chỉ ID classification, không OOD
 python src/scripts/eval_ood.py \
-  --config configs/experiment/exp_full_model.yaml \
-  --checkpoint outputs/runs/full_model/checkpoints/best.pt \
+  --config configs/experiment/exp_magla_clip.yaml \
+  --checkpoint outputs/runs/magla_clip/checkpoints/best.pt \
   --no-ood
 
 # Tuning temperature cho OOD scoring
 python src/scripts/eval_ood.py \
-  --config configs/experiment/exp_full_model.yaml \
-  --checkpoint outputs/runs/full_model/checkpoints/best.pt \
+  --config configs/experiment/exp_magla_clip.yaml \
+  --checkpoint outputs/runs/magla_clip/checkpoints/best.pt \
   --temperature 0.5
 
 # Lưu JSON tùy chọn đường dẫn
 python src/scripts/eval_ood.py \
-  --config configs/experiment/exp_full_model.yaml \
-  --checkpoint outputs/runs/full_model/checkpoints/best.pt \
-  --save-json outputs/eval/full_model_t0.5.json
+  --config configs/experiment/exp_magla_clip.yaml \
+  --checkpoint outputs/runs/magla_clip/checkpoints/best.pt \
+  --save-json outputs/eval/magla_clip_t0.5.json
 ```
 
 ## Quan hệ với các module eval đã có
@@ -636,7 +671,7 @@ python src/scripts/cleanup_llm_cache.py
 ```bash
 # 1) Sinh description 1 lần (LLM nạp → sinh → tự xoá)
 python src/scripts/generate_llm_descriptions.py \
-  --config configs/experiment/exp_full_model.yaml \
+  --config configs/experiment/exp_magla_clip.yaml \
   --force-cleanup
 
 # 2) (Nếu lỡ còn cache sót) Xoá thủ công
@@ -644,14 +679,14 @@ python src/scripts/cleanup_llm_cache.py --also-home
 
 # 3) Train bình thường, disk đã thoáng
 python src/scripts/train_fsl.py \
-  --config configs/experiment/exp_full_model.yaml --do-test
+  --config configs/experiment/exp_magla_clip.yaml --do-test
 ```
 
 Hoặc dùng API (bỏ hẳn LLM local):
 ```bash
 export OPENAI_API_KEY=sk-...
 python src/scripts/generate_llm_descriptions.py \
-  --config configs/experiment/exp_full_model.yaml --use-api
+  --config configs/experiment/exp_magla_clip.yaml --use-api
 ```
 
 
@@ -672,22 +707,27 @@ df -h /
 
 # Checkpoint disk-efficient (fix lỗi zip short-write)
 
-## Lỗi gặp phải
+## Lỗi gặp phải (lịch sử — khi checkpoint còn serialize full CLIP)
 ```
 RuntimeError: [enforce fail at inline_container.cc:672] .
 unexpected pos 878616000 vs 878615888
 ```
-Lỗi ghi file của `torch.save`: thiếu đúng 112 byte cuối của zip ~838MB
+Lỗi ghi file của `torch.save`: thiếu byte cuối của zip container khi file checkpoint **rất lớn** (~800MB+)
 → **đĩa hết chỗ giữa lúc ghi checkpoint**. Kết hợp với LLM cache 15GB
-còn sót, mỗi epoch lại sinh thêm 1 file `epoch_N.pt` ~838MB → đầy đĩa.
+còn sót, mỗi epoch lại sinh thêm `epoch_N.pt` lớn → đầy đĩa.
+
+**Sau khi chuyển sang checkpoint trainable-only (~30–40MB/file),** nguy cơ lỗi zip do kích thước giảm mạnh; vẫn giữ atomic save + prune như dưới.
 
 ## Fix đã làm
 - `src/utils/checkpoint.py`:
   - `save_checkpoint(...)` ghi **atomic**: `torch.save` vào `<path>.tmp`
     rồi `os.replace` → nếu hết đĩa thì không để lại file hỏng.
+  - `load_checkpoint(...)`: nếu `checkpoint_format == "trainable_only"` → nạp vào
+    `model.trainable_modules` (CLIP không có trong file).
   - Thêm `keep_only_best=True` và `prune_checkpoint_dir(keep=...)`:
     tự xoá mọi `*.pt` / `*.pt.tmp` khác không nằm trong whitelist.
 - `src/trainer/trainer.py`:
+  - **`save()`:** serialize **`trainable_modules.state_dict()`** + metadata (checkpoint nhẹ).
   - Flag config `train.keep_only_best: true` (default).
   - Mỗi lần `save(...)` chỉ ghi **`last.pt`** (overwrite tại chỗ);
     khi `is_best=True` thêm **`best.pt`** (cũng overwrite).
@@ -701,9 +741,9 @@ train:
 ```
 
 ## Kết quả
-- Disk checkpoint steady state ≈ 2 × 838MB = **~1.7GB** thay vì
-  `N_epochs × 838MB` (40 epoch → ~33GB, chắc chắn đầy đĩa 32GB).
-- Không còn `epoch_1.pt`, `epoch_5.pt`, ... tích luỹ trên đĩa.
+- **Trước (full `state_dict`):** steady state ≈ 2 × ~600–800MB+ ≈ **~1.2–1.7GB** chỉ cho `best.pt` + `last.pt`; thêm `epoch_N.pt` thì tệ hơn.
+- **Sau (trainable-only + không lưu CLIP trong checkpoint):** steady state ≈ **2 × ~30–40MB** (hai file nhẹ, cùng thứ tự kích thước vài chục MB — khớp mục tiêu “vài trăm MB” tối đa nếu cộng buffer/optimizer, không còn GB-scale).
+- Không còn `epoch_1.pt`, `epoch_5.pt`, ... tích luỹ trên đĩa (trừ khi `keep_only_best: false`).
 - Atomic save tránh tạo file `.pt` hỏng khi disk đầy → lần sau không
   crash lúc `load_checkpoint`.
 

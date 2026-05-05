@@ -91,35 +91,40 @@ class GLocalFSLOODModel(nn.Module):
         freeze_clip = _get(clip_cfg, "freeze", default=True)
         clip_cache = _get(clip_cfg, "weight_cache_dir", default=None)
 
-        # 1. CLIP Image Encoder (student)
-        self.image_encoder = CLIPImageEncoder(
+        # 1-3. CLIP encoders — stored OUTSIDE nn.Module tree so they never
+        #       appear in state_dict() and don't inflate checkpoints (~1.2GB → ~2MB).
+        #       They are rebuilt from pretrained weights at construction time.
+        _image_encoder = CLIPImageEncoder(
             backbone=backbone,
             pretrained=pretrained,
             freeze=freeze_clip,
             device=self.device,
             weight_cache_dir=clip_cache,
         )
-        self.embed_dim = self.image_encoder.embed_dim
-        self.local_dim = self.image_encoder.local_dim
+        self.embed_dim = _image_encoder.embed_dim
+        self.local_dim = _image_encoder.local_dim
+        object.__setattr__(self, "image_encoder", _image_encoder)
 
-        # 2. Teacher image encoder (frozen copy) — glali zs_img_encoder analogue
+        # Teacher (frozen copy of student)
         self.build_teacher = bool(build_teacher)
         if self.build_teacher:
-            self.teacher_image_encoder = copy.deepcopy(self.image_encoder)
-            for p in self.teacher_image_encoder.parameters():
+            _teacher = copy.deepcopy(_image_encoder)
+            for p in _teacher.parameters():
                 p.requires_grad = False
-            self.teacher_image_encoder.eval()
+            _teacher.eval()
+            object.__setattr__(self, "_teacher_image_encoder", _teacher)
         else:
-            self.teacher_image_encoder = None
+            object.__setattr__(self, "_teacher_image_encoder", None)
 
-        # 3. CLIP Text Encoder (frozen)
-        self.text_encoder = CLIPTextEncoder(
+        # Text encoder (always frozen)
+        _text_encoder = CLIPTextEncoder(
             backbone=backbone,
             pretrained=pretrained,
             freeze=True,
             device=self.device,
             weight_cache_dir=clip_cache,
         )
+        object.__setattr__(self, "text_encoder", _text_encoder)
 
         # 4. Build per-class text embeddings + prototypes
         self.class_names = class_names
@@ -183,6 +188,25 @@ class GLocalFSLOODModel(nn.Module):
         self.trainable_modules["aligner"] = self.aligner
 
     # ------------------------------------------------------------------
+    # Device management for non-module encoders
+    # ------------------------------------------------------------------
+    def to(self, *args, **kwargs):
+        super().to(*args, **kwargs)
+        self.image_encoder.to(*args, **kwargs)
+        self.text_encoder.to(*args, **kwargs)
+        if self._teacher_image_encoder is not None:
+            self._teacher_image_encoder.to(*args, **kwargs)
+        return self
+
+    def cuda(self, device=None):
+        super().cuda(device)
+        self.image_encoder.cuda(device)
+        self.text_encoder.cuda(device)
+        if self._teacher_image_encoder is not None:
+            self._teacher_image_encoder.cuda(device)
+        return self
+
+    # ------------------------------------------------------------------
     # Text embeddings
     # ------------------------------------------------------------------
     def _build_text_embeddings(self) -> None:
@@ -240,9 +264,9 @@ class GLocalFSLOODModel(nn.Module):
 
         # --- teacher encode (no grad, frozen)
         global_feat_teacher: Optional[torch.Tensor] = None
-        if self.teacher_image_encoder is not None:
+        if self._teacher_image_encoder is not None:
             with torch.no_grad():
-                global_feat_teacher, _ = self.teacher_image_encoder(images, return_local=False)
+                global_feat_teacher, _ = self._teacher_image_encoder(images, return_local=False)
 
         # --- text / prototypes (optionally refined via visual)
         protos = self.class_prototypes.to(self.device)  # [C, D]
@@ -345,8 +369,8 @@ class GLocalFSLOODModel(nn.Module):
             p.requires_grad = False
         self.text_encoder.eval()
 
-        # Teacher is always frozen
-        if self.teacher_image_encoder is not None:
-            for p in self.teacher_image_encoder.parameters():
+        # Teacher is always frozen (stored outside nn.Module tree)
+        if self._teacher_image_encoder is not None:
+            for p in self._teacher_image_encoder.parameters():
                 p.requires_grad = False
-            self.teacher_image_encoder.eval()
+            self._teacher_image_encoder.eval()
