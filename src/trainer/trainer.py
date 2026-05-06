@@ -263,10 +263,13 @@ class Trainer:
             is_best = False
             val_metrics: Dict[str, Any] = {}
             if self.val_loader is not None and (epoch % eval_every == 0 or epoch == epochs):
+                val_ood = self.ood_loader if bool(
+                    _get(self.config, "train", "validate_ood", default=True),
+                ) else None
                 val_metrics = validate_epoch(
                     self.model, self.val_loader, self.loss_fn, self.device,
                     epoch, self.config, self.logger,
-                    ood_loader=self.ood_loader, tb_logger=self.tb_logger,
+                    ood_loader=val_ood, tb_logger=self.tb_logger,
                 )
                 history["val"].append(val_metrics)
                 val_metric = float(val_metrics.get("val_accuracy", 0.0))

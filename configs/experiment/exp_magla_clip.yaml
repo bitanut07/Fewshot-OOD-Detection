@@ -66,6 +66,8 @@ train:
   warmup_cons_lr: 0.00001
   mixed_precision: true
   early_stopping_patience: 20
+  # Bỏ qua val-ood mỗi epoch (chỉ val ID) — tiết kiệm thời gian; OOD vẫn chạy khi --do-test / eval_ood.py
+  validate_ood: false
 
 ood:
   topk: 50
