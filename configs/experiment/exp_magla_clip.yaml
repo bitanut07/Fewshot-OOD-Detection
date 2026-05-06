@@ -37,7 +37,7 @@ model:
     alpha: 0.5
     num_layers: 2
     num_heads: 8
-    hidden_dim: 512
+    hidden_dim: 256
     dropout: 0.1
   local_contrastive:
     trainable: true

@@ -26,6 +26,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -220,7 +221,18 @@ def _cap_kshot(full_ds: BoneXRayDataset, subset: Subset, k_shot: int, seed: int 
     return Subset(full_ds, capped)
 
 
+def _format_duration(seconds: float) -> str:
+    total_sec = int(max(0.0, seconds))
+    h = total_sec // 3600
+    m = (total_sec % 3600) // 60
+    s = total_sec % 60
+    if h > 0:
+        return f"{h:02d}:{m:02d}:{s:02d}"
+    return f"{m:02d}:{s:02d}"
+
+
 def main() -> None:
+    run_start = time.perf_counter()
     parser = argparse.ArgumentParser(description="Train GLOCAL-FSL-OOD model")
     parser.add_argument("--config", required=True, help="Path to experiment config YAML")
     parser.add_argument("--override", default=None, help="Optional override config YAML")
@@ -301,13 +313,19 @@ def main() -> None:
         trainer.resume(args.resume)
 
     # ---- run ----
+    train_seconds = 0.0
     if not args.eval_only:
+        train_start = time.perf_counter()
         trainer.train()
+        train_seconds = time.perf_counter() - train_start
+        logger.info(f"Total training time: {_format_duration(train_seconds)} ({train_seconds:.1f}s)")
 
     if args.do_test or args.eval_only:
         results = trainer.test(use_best=True)
         logger.info(f"Test results: {results}")
 
+    total_seconds = time.perf_counter() - run_start
+    logger.info(f"Total run time: {_format_duration(total_seconds)} ({total_seconds:.1f}s)")
     tb_logger.close()
 
 
