@@ -24,7 +24,7 @@ includes:
 experiment_name: "magla_clip"
 
 llm_descriptions:
-  num_descriptions_per_class: 50
+  num_descriptions_per_class: 30
   use_template_prompt: true
 
 model:
@@ -55,14 +55,14 @@ train:
   batch_size: 32
   optimizer:
     type: "sgd"
-    lr: 0.01
+    lr: 0.005
     momentum: 0.9
-    weight_decay: 0.0
+    weight_decay: 0.0005
   scheduler:
     type: "CosineAnnealingLR"
     T_max: 200
     eta_min: 0.000001
-  warmup_epochs: 1
+  warmup_epochs: 5
   warmup_cons_lr: 0.00001
   mixed_precision: true
   early_stopping_patience: 20
