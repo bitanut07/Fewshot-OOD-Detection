@@ -108,13 +108,13 @@ IMG<mã dữ liệu><số thứ tự ảnh 5 chữ số><mã đa dạng>
 #Liên hệ với Admin để lấy GPU hoặc tự cấu hình GPU Cloud của mình.
 
 Chạy lệnh dưới để bật server GPU Cloud:
-ssh -i ~/.ssh/id_ed25519 -p 33528 root@116.109.174.203
+ssh -i ~/.ssh/id_rsa -p 53029 root@171.248.245.1
 
-scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/data/prompts/class_descriptions.json .
+scp -i ~/.ssh/id_rsa -P 53029 root@171.248.245.1:/workspace/Fewshot-OOD-Detection/data/prompts/class_descriptions.json .
 
-scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/outputs/runs/magla_clip/checkpoints/best.pt .
+scp -i ~/.ssh/id_rsa -P 53029 root@171.248.245.1:/workspace/Fewshot-OOD-Detection/outputs/runs/magla_clip/checkpoints/best.pt .
 
-scp -i ~/.ssh/id_ed25519 -P 33528 root@116.109.174.203:/workspace/Fewshot-OOD-Detection/outputs/eval/magla_clip.json .
+scp -i ~/.ssh/id_rsa -P 53029 root@171.248.245.1:/workspace/Fewshot-OOD-Detection/outputs/eval/magla_clip.json .
 
 cd Fewshot-OOD-Detection
 

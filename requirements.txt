@@ -1,8 +1,8 @@
 # GLOCAL-FSL-OOD Requirements
 
 # Core
-torch>=2.0.0
-torchvision>=0.15.0
+# torch>=2.0.0
+# torchvision>=0.15.0
 
 # CLIP
 open_clip_torch>=2.20.0
