@@ -30,7 +30,7 @@ llm_descriptions:
 model:
   clip:
     backbone: "ViT-B/16"
-    pretrained: "openai_public"
+    pretrained: "openai"
     freeze: true
   text_refiner:
     trainable: true
