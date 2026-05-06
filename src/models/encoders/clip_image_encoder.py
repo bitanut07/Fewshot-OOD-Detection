@@ -13,6 +13,8 @@ import torch
 import torch.nn as nn
 import open_clip
 
+from .openai_clip_weights import resolve_open_clip_load_args
+
 
 class CLIPImageEncoder(nn.Module):
     """
@@ -23,10 +25,15 @@ class CLIPImageEncoder(nn.Module):
                                        └── Local Features (per-patch, sequence of patch embeddings)
 
     Args:
-        backbone: CLIP model name (e.g., "ViT-B/16")
-        pretrained: Pretrained weights source (e.g., "openai")
+        backbone: CLIP model name (e.g., ``"ViT-B/16"``). For OpenAI-public weights,
+                  any alias matching ``ViT-B/16`` / ``ViT-B-16`` is accepted.
+        pretrained: Weight source: ``"openai"`` (open_clip hub tag), a local ``.pt``
+                    path, or ``"openai_public"`` / ``"openai-azure"`` to download the
+                    same Azure ``.pt`` files as glali and load via ``open_clip``.
         freeze: Whether to freeze the encoder weights
         device: Device to load model on
+        weight_cache_dir: Cache directory for ``openai_public`` downloads
+            (defaults to ``CLIP_OPENAI_CACHE`` or ``~/.cache/clip``).
 
     Attributes:
         model: The underlying CLIP vision model
@@ -41,16 +48,20 @@ class CLIPImageEncoder(nn.Module):
         pretrained: str = "openai",
         freeze: bool = True,
         device: Optional[torch.device] = None,
+        weight_cache_dir: Optional[str] = None,
     ) -> None:
         super().__init__()
-        # open_clip uses names like "ViT-B-16". Allow both "ViT-B/16" and "ViT-B-16".
         self.backbone = backbone.replace("/", "-")
         self.pretrained = pretrained
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        # Load CLIP model
+        oc_name, pretrained_arg = resolve_open_clip_load_args(
+            backbone, pretrained, weight_cache_dir=weight_cache_dir,
+        )
         self.model, _, self.preprocess = open_clip.create_model_and_transforms(
-            self.backbone, pretrained=pretrained, device=self.device
+            oc_name,
+            pretrained=pretrained_arg,
+            device=self.device,
         )
         self.model.eval() if freeze else None
 

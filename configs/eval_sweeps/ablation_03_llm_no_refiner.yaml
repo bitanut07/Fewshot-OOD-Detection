@@ -1,0 +1,8 @@
+# Ablation (3): thêm mô tả LLM, chưa Text Refinement (dùng file mô tả đầy đủ từ exp_magla_clip)
+experiment_name: "ablation_03_llm_no_refiner"
+model:
+  text_refiner:
+    trainable: false
+loss:
+  text_refinement:
+    weight: 0.0

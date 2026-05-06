@@ -35,15 +35,24 @@ class GlobalAlignmentLoss(nn.Module):
             Loss scalar.
         """
         image_norm = F.normalize(image_global, p=2, dim=-1)
+        text_norm = F.normalize(text_embeddings, p=2, dim=-1)
 
-        if text_embeddings.dim() == 3:
-            text_norm = F.normalize(text_embeddings.mean(dim=1), p=2, dim=-1)
+        if text_norm.dim() == 3:
+            logits = (image_norm.unsqueeze(1) * text_norm).sum(dim=-1)
         else:
-            text_norm = F.normalize(text_embeddings, p=2, dim=-1)
+            logits = torch.matmul(image_norm, text_norm.T)
 
-        logits = torch.matmul(image_norm, text_norm.T) / self.temperature
-        loss = F.cross_entropy(logits, labels)
-        return loss
+        logits = logits / self.temperature
+
+        num_classes = logits.size(-1)
+        if labels.min().item() < 0 or labels.max().item() >= num_classes:
+            raise ValueError(
+                f"GlobalAlignmentLoss: labels out of range [0,{num_classes}) "
+                f"min={labels.min().item()} max={labels.max().item()}. "
+                "Shape mismatch between text_embeddings and labels."
+            )
+
+        return F.cross_entropy(logits, labels)
 
 
 class LocalAlignmentLoss(nn.Module):

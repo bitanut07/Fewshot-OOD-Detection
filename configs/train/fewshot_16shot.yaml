@@ -1,8 +1,8 @@
-# Few-shot 8-shot
-experiment_name: "fsl_8shot"
+# Few-shot 16 mẫu / class (bảng đánh giá “16 mẫu”)
+experiment_name: "fsl_16shot"
 fewshot:
   n_way: 6
-  k_shot: 8
+  k_shot: 16
   n_query: 15
 train:
   epochs: 200

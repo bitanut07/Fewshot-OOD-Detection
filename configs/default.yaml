@@ -9,17 +9,39 @@
 # =============================================================================
 model:
   llm:
+    # Backend selection
+    use_local_llm: true                 # false → API (no local weights)
+    cleanup_cache: false                # set true in cloud configs to free disk
+    # Local backend
     model_name: "Qwen/Qwen2.5-7B-Instruct"
     device_map: "auto"
     torch_dtype: "float16"
+    quantization: null                  # "4bit" | "8bit" | null
+    low_cpu_mem_usage: true
+    cache_dir: "/tmp/hf-cache-fewshot-ood"
+    trust_remote_code: true
+    freeze: true
+    # Generation params
     max_new_tokens: 768
     temperature: 0.3
     top_p: 0.85
     do_sample: true
-    cache_dir: null
-    freeze: true
-    trust_remote_code: true
     repetition_penalty: 1.15
+    # API fallback
+    api:
+      provider: "openai"
+      model_name: "gpt-4o-mini"
+      api_key_env: "OPENAI_API_KEY"
+      base_url: null
+      timeout: 60.0
+
+  # CLIP vision+text (open_clip). ``openai_public`` = same Azure .pt URLs + SHA check as glali/clip_w_local/clip.py
+  clip:
+    backbone: "ViT-B/16"
+    pretrained: "openai_public"
+    freeze: true
+    # Optional; default: env CLIP_OPENAI_CACHE or ~/.cache/clip
+    weight_cache_dir: null
 
 # =============================================================================
 # LLM Description Generation Configuration (OFFLINE)
@@ -124,7 +146,8 @@ llm_descriptions:
   # Output files
   output_file: "data/prompts/class_descriptions.yaml"
   questions_output_file: "data/prompts/class_questions.yaml"
-  glali_output_file: "data/prompts/class_descriptions.json"
+  # Secondary JSON descriptions path (YAML is preferred when present)
+  descriptions_json_file: "data/prompts/class_descriptions.json"
 
   generation_batch_size: 1
   cache_generated: true
@@ -133,11 +156,6 @@ llm_descriptions:
 # Model Module Configuration
 # =============================================================================
 model_type: "glocal_fsl_ood"
-
-clip:
-  backbone: "ViT-B/16"
-  pretrained: "openai"
-  freeze: true
 
 text_refiner:
   text_dim: 512
@@ -165,7 +183,7 @@ local_contrastive:
   sim_max: 1.0
 
 local_region_selector:
-  score_dim: 768
+  score_dim: 512
   selection_mode: "similarity"
   top_k: 4
   bottom_k: 4
@@ -182,7 +200,7 @@ alignment:
   learnable_weights: false
   text_embed_dim: 512
   image_global_dim: 512
-  image_local_dim: 768
+  image_local_dim: 512
 
 # =============================================================================
 # Loss Weights
@@ -198,27 +216,46 @@ loss:
     weight: 0.5
   text_refinement:
     weight: 0.1
+  # Glali-style OOD entropy regularization over non-top-K local patches
+  ood_reg:
+    weight: 0.25
+  # Teacher-student distillation weights (set >0 only when teacher encoder is on)
+  distill_img:
+    weight: 10.0
+  distill_text:
+    weight: 0.0
 
 # =============================================================================
 # Training Configuration
-# Few-shot k=1 → short schedule + mixed precision to reduce overfitting
+# Matches glali LocProto recipe: SGD + cosine LR + 200 epochs + batch 32
 # =============================================================================
 train:
-  epochs: 40
-  batch_size: 4
+  epochs: 200
+  batch_size: 32
   optimizer:
-    type: "AdamW"
-    lr: 0.0002
-    weight_decay: 0.01
+    type: "sgd"
+    lr: 0.01
+    momentum: 0.9
+    weight_decay: 0.0
   scheduler:
     type: "CosineAnnealingLR"
-    T_max: 40
+    T_max: 200
     eta_min: 0.000001
-  warmup_epochs: 5
+  warmup_epochs: 1
+  warmup_cons_lr: 0.00001
   grad_clip: 1.0
   mixed_precision: true
   ema: false
   ema_decay: 0.999
+  # Early stopping: stop training when val metric does not improve for
+  # ``early_stopping_patience`` consecutive evaluation epochs.
+  # Set to 0 to disable.
+  early_stopping_patience: 10
+  early_stopping_min_delta: 0.0001
+  # Checkpointing — disk-efficient defaults for small-disk GPU cloud:
+  #   only best.pt + last.pt are kept (both overwritten in place)
+  save_best: true
+  keep_only_best: true
 
 fewshot:
   n_way: 6
@@ -237,3 +274,37 @@ ood:
   method: "msp"
   threshold_strategy: "percentile"
   percentile: 95
+  # Top-k for entropy regularization on patch scores (non-GT top-k mass → uniform)
+  topk: 50
+  temperature: 1.0
+
+# =============================================================================
+# Experiment / IO paths
+# =============================================================================
+experiment:
+  seed: 42
+  deterministic: false
+  name: "default"
+
+paths:
+  output_dir: "outputs/runs"
+  log_dir: "outputs/logs"
+  tb_dir: "outputs/tensorboard"
+  checkpoint_dir: null
+  data_root: "data/processed/image_processing"
+
+logging:
+  level: "INFO"
+
+# =============================================================================
+# Data defaults
+# =============================================================================
+data:
+  manifest_file: "data/processed/data_processing/manifest.csv"
+  val_ratio: 0.15
+  test_ratio: 0.15
+  num_workers: 4
+  pin_memory: true
+  # Match open_clip / CLIP preprocessing (224 RGB)
+  image_mean: [0.48145466, 0.4578275, 0.40821073]
+  image_std: [0.26862954, 0.26130258, 0.27577711]

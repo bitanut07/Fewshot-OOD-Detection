@@ -1,0 +1,5 @@
+experiment_name: "magla_clip_k50_s16"
+ood:
+  topk: 50
+fewshot:
+  k_shot: 16

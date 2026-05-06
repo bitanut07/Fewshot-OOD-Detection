@@ -4,10 +4,12 @@
 
 model:
   clip:
-    # open_clip naming uses "ViT-B-16" (we also accept "ViT-B/16" in code)
+    # Backbone aliases (ViT-B/16, ViT-B-16) resolve to the same OpenAI public checkpoint when pretrained is openai_public.
     backbone: "ViT-B-16"
-    pretrained: "openai"
+    # openai = open_clip hub tag; openai_public = download ViT-B-16.pt from OpenAI Azure (glali _MODELS URL) then load via open_clip
+    pretrained: "openai_public"
     freeze: true
+    weight_cache_dir: null
 
     # Return local per-patch features (projected to text embedding space)
     return_local_features: true

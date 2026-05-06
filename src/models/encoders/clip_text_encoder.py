@@ -13,6 +13,8 @@ import torch
 import torch.nn as nn
 import open_clip
 
+from .openai_clip_weights import resolve_open_clip_load_args
+
 
 class CLIPTextEncoder(nn.Module):
     """
@@ -22,10 +24,12 @@ class CLIPTextEncoder(nn.Module):
         Text Prompts -> Tokenizer -> CLIP Text Encoder -> Text Embeddings
 
     Args:
-        backbone: CLIP model name (must match image encoder)
-        pretrained: Pretrained weights source (must match image encoder)
+        backbone: CLIP model name (must match image encoder).
+        pretrained: Same semantics as ``CLIPImageEncoder`` (``openai``, path, or
+                    ``openai_public`` / ``openai-azure`` for glali-style Azure ``.pt``).
         freeze: Whether to freeze the encoder weights
         device: Device to load model on
+        weight_cache_dir: Cache dir for OpenAI-public downloads (match image encoder).
     """
 
     def __init__(
@@ -34,16 +38,20 @@ class CLIPTextEncoder(nn.Module):
         pretrained: str = "openai",
         freeze: bool = True,
         device: Optional[torch.device] = None,
+        weight_cache_dir: Optional[str] = None,
     ) -> None:
         super().__init__()
-        # open_clip uses names like "ViT-B-16". Allow both "ViT-B/16" and "ViT-B-16".
         self.backbone = backbone.replace("/", "-")
         self.pretrained = pretrained
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        # Load CLIP model (only need text encoder)
+        oc_name, pretrained_arg = resolve_open_clip_load_args(
+            backbone, pretrained, weight_cache_dir=weight_cache_dir,
+        )
         self.model, _, _ = open_clip.create_model_and_transforms(
-            self.backbone, pretrained=pretrained, device=self.device
+            oc_name,
+            pretrained=pretrained_arg,
+            device=self.device,
         )
         self.model.eval() if freeze else None
 
